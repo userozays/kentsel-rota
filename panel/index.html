@@ -1,0 +1,1064 @@
+<title>Kentsel Rota Panosu</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..700&family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+
+<style>
+:root{
+  --bg:#F5F7F7; --surface:#FFFFFF; --surface-2:#EFF3F3; --surface-3:#E4EAEA;
+  --border:#D8E0E0; --border-strong:#BCC8C8;
+  --text:#0F1A1C; --muted:#5A6A6C; --faint:#8B9A9C;
+  --accent:#0B6E75; --accent-ink:#075055; --accent-soft:#DCEDED; --accent-line:#0B6E75;
+  --ok:#17784A; --ok-soft:#DCEFE3; --ok-line:#17784A;
+  --warn:#9A6708; --warn-soft:#F6ECD6; --warn-line:#B4790A;
+  --bad:#A93226; --bad-soft:#F6E0DD; --bad-line:#A93226;
+  --idle:#77878A; --idle-soft:#E7ECEC; --idle-line:#9AAAAC;
+  --shadow:0 1px 2px rgba(15,26,28,.06), 0 4px 14px rgba(15,26,28,.05);
+  --r:10px; --r-sm:6px;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0A1113; --surface:#111A1D; --surface-2:#172325; --surface-3:#1E2C2F;
+    --border:#243437; --border-strong:#33474B;
+    --text:#E7EDEC; --muted:#94A6A8; --faint:#6E8083;
+    --accent:#45B6BC; --accent-ink:#8AD6DA; --accent-soft:#123437; --accent-line:#45B6BC;
+    --ok:#4CC486; --ok-soft:#102E20; --ok-line:#4CC486;
+    --warn:#E0A33A; --warn-soft:#332512; --warn-line:#E0A33A;
+    --bad:#F0705F; --bad-soft:#361A17; --bad-line:#F0705F;
+    --idle:#7D9093; --idle-soft:#1A2528; --idle-line:#5E7175;
+    --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.28);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0A1113; --surface:#111A1D; --surface-2:#172325; --surface-3:#1E2C2F;
+  --border:#243437; --border-strong:#33474B;
+  --text:#E7EDEC; --muted:#94A6A8; --faint:#6E8083;
+  --accent:#45B6BC; --accent-ink:#8AD6DA; --accent-soft:#123437; --accent-line:#45B6BC;
+  --ok:#4CC486; --ok-soft:#102E20; --ok-line:#4CC486;
+  --warn:#E0A33A; --warn-soft:#332512; --warn-line:#E0A33A;
+  --bad:#F0705F; --bad-soft:#361A17; --bad-line:#F0705F;
+  --idle:#7D9093; --idle-soft:#1A2528; --idle-line:#5E7175;
+  --shadow:0 1px 2px rgba(0,0,0,.4), 0 6px 18px rgba(0,0,0,.28);
+}
+
+*{box-sizing:border-box}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:"IBM Plex Sans",system-ui,-apple-system,Segoe UI,sans-serif;
+  font-size:14px; line-height:1.5; -webkit-font-smoothing:antialiased;
+}
+h1,h2,h3,h4{font-family:"Archivo",system-ui,sans-serif; font-variation-settings:"wdth" 112; margin:0; text-wrap:balance; letter-spacing:-.012em}
+.mono,.num{font-family:"IBM Plex Mono",ui-monospace,monospace; font-variant-numeric:tabular-nums}
+button,input,select,textarea{font:inherit; color:inherit}
+a{color:var(--accent)}
+:focus-visible{outline:2px solid var(--accent); outline-offset:2px; border-radius:4px}
+
+/* ---------- shell ---------- */
+.shell{display:grid; grid-template-columns:212px 1fr; min-height:100vh}
+.rail{
+  background:var(--surface); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; gap:2px; padding:16px 10px;
+  position:sticky; top:0; height:100vh; overflow-y:auto;
+}
+.brand{padding:2px 8px 16px; display:flex; flex-direction:column; gap:3px}
+.brand b{font-family:"Archivo",sans-serif; font-variation-settings:"wdth" 118; font-size:15px; font-weight:700; letter-spacing:-.02em}
+.brand span{font-size:10.5px; letter-spacing:.1em; text-transform:uppercase; color:var(--faint); font-weight:500}
+.navbtn{
+  display:flex; align-items:center; gap:9px; width:100%; text-align:left;
+  background:none; border:0; padding:8px 10px; border-radius:var(--r-sm);
+  color:var(--muted); cursor:pointer; font-size:13.5px; font-weight:500;
+}
+.navbtn:hover{background:var(--surface-2); color:var(--text)}
+.navbtn[aria-current="true"]{background:var(--accent-soft); color:var(--accent-ink); font-weight:600}
+.navbtn .ic{width:16px; text-align:center; font-size:13px; opacity:.85}
+.navbtn .cnt{margin-left:auto; font-size:11px; color:var(--faint); font-family:"IBM Plex Mono",monospace}
+.railfoot{margin-top:auto; padding:12px 8px 0; border-top:1px solid var(--border); display:flex; flex-direction:column; gap:8px}
+.savechip{display:flex; align-items:center; gap:6px; font-size:11.5px; color:var(--muted)}
+.dot{width:7px; height:7px; border-radius:50%; background:var(--idle-line); flex:none}
+.dot.ok{background:var(--ok-line)} .dot.busy{background:var(--warn-line); animation:pulse 1s infinite} .dot.err{background:var(--bad-line)}
+@keyframes pulse{50%{opacity:.25}}
+@media (prefers-reduced-motion:reduce){.dot.busy{animation:none}}
+
+.main{min-width:0; padding:26px 30px 70px}
+.head{display:flex; align-items:flex-start; gap:16px; flex-wrap:wrap; margin-bottom:22px}
+.head h1{font-size:25px; font-weight:700}
+.head .sub{color:var(--muted); font-size:13px; margin-top:4px; max-width:64ch}
+.head .acts{margin-left:auto; display:flex; gap:8px; flex-wrap:wrap}
+
+/* ---------- controls ---------- */
+.btn{
+  background:var(--surface); border:1px solid var(--border-strong); color:var(--text);
+  padding:7px 13px; border-radius:var(--r-sm); cursor:pointer; font-size:13px; font-weight:500;
+  display:inline-flex; align-items:center; gap:6px; white-space:nowrap;
+}
+.btn:hover{background:var(--surface-2); border-color:var(--faint)}
+.btn.pri{background:var(--accent); border-color:var(--accent); color:#fff}
+:root[data-theme="dark"] .btn.pri, :root:not([data-theme="light"]) .btn.pri{color:#06181A}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .btn.pri{color:#fff}}
+.btn.pri:hover{filter:brightness(1.08)}
+.btn.sm{padding:4px 9px; font-size:12px}
+.btn.danger{color:var(--bad); border-color:var(--bad-line)}
+.btn.ghost{border-color:transparent; background:transparent; color:var(--muted)}
+.btn.ghost:hover{background:var(--surface-2); color:var(--text)}
+
+.field{display:flex; flex-direction:column; gap:5px; min-width:0}
+.field label{font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--faint); font-weight:600}
+.field input,.field select,.field textarea{
+  background:var(--surface); border:1px solid var(--border-strong); border-radius:var(--r-sm);
+  padding:7px 9px; font-size:13.5px; width:100%;
+}
+.field textarea{resize:vertical; min-height:64px; font-family:inherit}
+.field .hint{font-size:11.5px; color:var(--faint)}
+
+/* ---------- cards / board ---------- */
+.board{display:flex; gap:14px; overflow-x:auto; padding-bottom:12px; align-items:flex-start}
+.col{flex:0 0 296px; min-width:296px}
+.colhead{
+  display:flex; align-items:center; gap:8px; padding:0 3px 9px;
+  font-size:11px; text-transform:uppercase; letter-spacing:.09em; font-weight:600; color:var(--muted);
+}
+.colhead .n{font-family:"IBM Plex Mono",monospace; color:var(--faint); font-size:11px}
+.colhead .bar{flex:1; height:2px; background:var(--border); border-radius:2px}
+.stack{display:flex; flex-direction:column; gap:10px}
+
+.card{
+  background:var(--surface); border:1px solid var(--border); border-radius:var(--r);
+  padding:13px 14px; box-shadow:var(--shadow); cursor:pointer; text-align:left; width:100%;
+  display:flex; flex-direction:column; gap:10px;
+}
+.card:hover{border-color:var(--accent-line)}
+.card .top{display:flex; align-items:baseline; gap:8px}
+.card h3{font-size:15px; font-weight:600; flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+.card .loc{font-size:11.5px; color:var(--faint); font-family:"IBM Plex Mono",monospace}
+.card .meta{display:flex; gap:10px; flex-wrap:wrap; font-size:11.5px; color:var(--muted)}
+.card .meta b{font-family:"IBM Plex Mono",monospace; font-weight:500; color:var(--text)}
+
+/* ---------- pay şeridi (signature) ---------- */
+.strip-wrap{position:relative; padding-top:15px}
+.strip{display:flex; gap:1px; height:24px; border-radius:4px; overflow:hidden; background:var(--surface-3)}
+.strip.lg{height:34px}
+.seg{min-width:2px; transition:filter .12s}
+.seg.olumlu{background:var(--ok-line)} .seg.kararsiz{background:var(--warn-line)}
+.seg.olumsuz{background:var(--bad-line)} .seg.ulasilamadi{background:var(--idle-line)}
+.seg:hover{filter:brightness(1.25)}
+.thresh{position:absolute; top:9px; bottom:0; left:50%; width:0; border-left:2px dashed var(--text); opacity:.55; pointer-events:none}
+.thresh::before{
+  content:"%50"; position:absolute; top:-13px; left:3px;
+  font-family:"IBM Plex Mono",monospace; font-size:9.5px; font-weight:600; color:var(--muted); letter-spacing:.02em;
+}
+.readout{display:flex; align-items:baseline; gap:8px; flex-wrap:wrap}
+.readout .big{font-family:"IBM Plex Mono",monospace; font-size:20px; font-weight:600; letter-spacing:-.02em}
+.readout .big.pass{color:var(--ok)} .readout .big.fail{color:var(--text)}
+.readout .lbl{font-size:11px; text-transform:uppercase; letter-spacing:.07em; color:var(--faint); font-weight:600}
+.readout .kisi{font-family:"IBM Plex Mono",monospace; font-size:12.5px; color:var(--muted)}
+
+.verdict{display:inline-flex; align-items:center; gap:5px; font-size:11.5px; font-weight:600; padding:2px 8px; border-radius:99px}
+.verdict.pass{background:var(--ok-soft); color:var(--ok)}
+.verdict.fail{background:var(--surface-3); color:var(--muted)}
+
+/* ---------- pills ---------- */
+.pill{display:inline-flex; align-items:center; gap:5px; padding:2px 8px; border-radius:99px; font-size:11.5px; font-weight:500; white-space:nowrap}
+.pill.olumlu{background:var(--ok-soft); color:var(--ok)}
+.pill.kararsiz{background:var(--warn-soft); color:var(--warn)}
+.pill.olumsuz{background:var(--bad-soft); color:var(--bad)}
+.pill.ulasilamadi{background:var(--idle-soft); color:var(--idle)}
+.pill.neutral{background:var(--surface-3); color:var(--muted)}
+.pill.acc{background:var(--accent-soft); color:var(--accent-ink)}
+.pill.warnflag{background:var(--warn-soft); color:var(--warn)}
+
+.segctl{display:inline-flex; border:1px solid var(--border-strong); border-radius:var(--r-sm); overflow:hidden}
+.segctl button{background:var(--surface); border:0; border-right:1px solid var(--border); padding:3px 8px; font-size:11.5px; cursor:pointer; color:var(--muted)}
+.segctl button:last-child{border-right:0}
+.segctl button:hover{background:var(--surface-2)}
+.segctl button[aria-pressed="true"]{font-weight:600}
+.segctl button.olumlu[aria-pressed="true"]{background:var(--ok-line); color:#fff}
+.segctl button.kararsiz[aria-pressed="true"]{background:var(--warn-line); color:#fff}
+.segctl button.olumsuz[aria-pressed="true"]{background:var(--bad-line); color:#fff}
+.segctl button.ulasilamadi[aria-pressed="true"]{background:var(--idle-line); color:#fff}
+
+/* ---------- panel/table ---------- */
+.panel{background:var(--surface); border:1px solid var(--border); border-radius:var(--r); box-shadow:var(--shadow); overflow:hidden}
+.panel + .panel{margin-top:16px}
+.phead{display:flex; align-items:center; gap:12px; padding:13px 16px; border-bottom:1px solid var(--border); flex-wrap:wrap}
+.phead h2{font-size:14px; font-weight:600; letter-spacing:0}
+.phead .eyebrow{font-size:10.5px; text-transform:uppercase; letter-spacing:.09em; color:var(--faint); font-weight:600}
+.phead .acts{margin-left:auto; display:flex; gap:7px; flex-wrap:wrap}
+.pbody{padding:16px}
+.pbody.flush{padding:0}
+
+.tw{overflow-x:auto}
+table{border-collapse:collapse; width:100%; font-size:13px}
+th{
+  text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:.07em; font-weight:600;
+  color:var(--faint); padding:9px 12px; border-bottom:1px solid var(--border); white-space:nowrap; background:var(--surface-2);
+}
+td{padding:9px 12px; border-bottom:1px solid var(--border); vertical-align:middle}
+tr:last-child td{border-bottom:0}
+tbody tr:hover{background:var(--surface-2)}
+td.num,th.num{font-family:"IBM Plex Mono",monospace; font-variant-numeric:tabular-nums; text-align:right}
+.rowact{display:flex; gap:5px; justify-content:flex-end}
+
+.grid2{display:grid; grid-template-columns:repeat(auto-fit,minmax(230px,1fr)); gap:14px}
+.grid3{display:grid; grid-template-columns:repeat(auto-fit,minmax(180px,1fr)); gap:14px}
+.stat{background:var(--surface-2); border:1px solid var(--border); border-radius:var(--r-sm); padding:11px 13px; display:flex; flex-direction:column; gap:3px}
+.stat .k{font-size:10.5px; text-transform:uppercase; letter-spacing:.08em; color:var(--faint); font-weight:600}
+.stat .v{font-family:"IBM Plex Mono",monospace; font-size:19px; font-weight:600; letter-spacing:-.02em}
+.stat .n{font-size:11.5px; color:var(--muted)}
+
+.empty{padding:34px 20px; text-align:center; color:var(--muted)}
+.empty h3{font-size:15px; margin-bottom:6px; color:var(--text)}
+.empty p{max-width:46ch; margin:0 auto 14px; font-size:13px}
+
+.callout{
+  border-left:3px solid var(--accent-line); background:var(--accent-soft);
+  padding:11px 14px; border-radius:0 var(--r-sm) var(--r-sm) 0; font-size:13px;
+}
+.callout.warn{border-left-color:var(--warn-line); background:var(--warn-soft); color:var(--warn)}
+.callout.bad{border-left-color:var(--bad-line); background:var(--bad-soft); color:var(--bad)}
+.callout b{font-weight:600}
+
+.target{display:flex; flex-wrap:wrap; gap:7px; align-items:center}
+.tchip{
+  display:inline-flex; align-items:center; gap:7px; background:var(--surface-2);
+  border:1px solid var(--border-strong); border-radius:99px; padding:3px 10px 3px 4px; font-size:12.5px;
+}
+.tchip .rk{
+  width:19px; height:19px; border-radius:50%; background:var(--accent); color:var(--surface);
+  display:grid; place-items:center; font-family:"IBM Plex Mono",monospace; font-size:10.5px; font-weight:600;
+}
+:root[data-theme="dark"] .tchip .rk, :root:not([data-theme="light"]) .tchip .rk{color:#06181A}
+@media (prefers-color-scheme: light){:root:not([data-theme="dark"]) .tchip .rk{color:#fff}}
+.tchip .pv{font-family:"IBM Plex Mono",monospace; color:var(--muted); font-size:11.5px}
+
+.legend{display:flex; gap:14px; flex-wrap:wrap; font-size:11.5px; color:var(--muted)}
+.legend span{display:inline-flex; align-items:center; gap:5px}
+.legend i{width:9px; height:9px; border-radius:2px; display:block}
+
+/* ---------- dialog ---------- */
+dialog{
+  border:1px solid var(--border); border-radius:var(--r); padding:0; background:var(--surface); color:var(--text);
+  width:min(560px,calc(100vw - 28px)); box-shadow:0 18px 50px rgba(0,0,0,.28); max-height:88vh;
+}
+dialog::backdrop{background:rgba(8,16,18,.55)}
+.dhead{display:flex; align-items:center; padding:15px 18px; border-bottom:1px solid var(--border)}
+.dhead h2{font-size:16px; font-weight:600}
+.dhead .x{margin-left:auto; background:none; border:0; cursor:pointer; color:var(--muted); font-size:19px; line-height:1; padding:2px 5px; border-radius:4px}
+.dhead .x:hover{background:var(--surface-2); color:var(--text)}
+.dbody{padding:18px; overflow-y:auto; max-height:64vh; display:grid; grid-template-columns:1fr 1fr; gap:13px}
+.dbody .full{grid-column:1/-1}
+.dfoot{display:flex; gap:9px; justify-content:flex-end; padding:13px 18px; border-top:1px solid var(--border); background:var(--surface-2)}
+
+.tabs{display:flex; gap:4px; border-bottom:1px solid var(--border); margin-bottom:16px; overflow-x:auto}
+.tabs button{background:none; border:0; border-bottom:2px solid transparent; padding:8px 12px; cursor:pointer; color:var(--muted); font-size:13px; font-weight:500; white-space:nowrap}
+.tabs button[aria-selected="true"]{color:var(--accent-ink); border-bottom-color:var(--accent-line); font-weight:600}
+
+.crumb{display:flex; align-items:center; gap:7px; font-size:12px; color:var(--muted); margin-bottom:12px}
+.crumb button{background:none; border:0; color:var(--accent); cursor:pointer; font-size:12px; padding:0}
+
+.wrow{display:grid; grid-template-columns:1fr 78px; gap:9px; align-items:center; padding:5px 0}
+.wrow label{font-size:13px}
+.wrow input{text-align:right; font-family:"IBM Plex Mono",monospace}
+
+.foot{margin-top:34px; padding-top:14px; border-top:1px solid var(--border); font-size:11.5px; color:var(--faint); max-width:72ch}
+
+@media (max-width:900px){
+  .shell{grid-template-columns:1fr}
+  .rail{position:static; height:auto; flex-direction:row; align-items:center; gap:4px; overflow-x:auto; padding:9px 12px; border-right:0; border-bottom:1px solid var(--border)}
+  .brand{padding:0 12px 0 2px; flex:none}
+  .navbtn{width:auto; flex:none}
+  .navbtn .cnt{display:none}
+  .railfoot{margin-top:0; margin-left:auto; padding:0 0 0 12px; border-top:0; border-left:1px solid var(--border); flex-direction:row; align-items:center; flex:none}
+  .main{padding:18px 14px 60px}
+  .head h1{font-size:21px}
+  .dbody{grid-template-columns:1fr}
+  .col{flex:0 0 84vw; min-width:84vw}
+}
+</style>
+
+<script type="application/json" id="app-state">{"v":1,"seed":true,"binalar":[{"id":"b1","ad":"Örnek — Fenerbahçe Blok","il":"İstanbul","ilce":"Kadıköy","mahalle":"Fenerbahçe","ada":"1234","parsel":"7","adres":"Örnek Sk. No:12","arsaM2":520,"emsal":2.07,"taks":0.4,"mevcutKat":5,"riskli":"onaylandi","asama":"gorusme","payda":1000,"notlar":"Örnek kayıt. Kendi verini girmeden önce Yedek sekmesinden örnekleri silebilirsin.","agirliklar":{"malikPayi":35,"kira":10,"nakdi":10,"sure":15,"teminat":15,"teknik":15},"agirlikKilit":"","malikler":[{"id":"m1","ad":"A. Yılmaz","tel":"","bb":"1","kat":"Zemin","pay":92,"durum":"olumlu","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"m2","ad":"B. Demir","tel":"","bb":"2","kat":"Zemin","pay":88,"durum":"olumlu","engel":[],"kiraci":true,"son":"","not":"","gor":[]},{"id":"m3","ad":"C. Kaya","tel":"","bb":"3","kat":"1","pay":84,"durum":"olumlu","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"m4","ad":"D. Şahin","tel":"","bb":"4","kat":"1","pay":84,"durum":"kararsiz","engel":["intikal"],"kiraci":false,"son":"","not":"Veraset ilamı bekleniyor.","gor":[]},{"id":"m5","ad":"E. Çelik","tel":"","bb":"5","kat":"2","pay":84,"durum":"olumlu","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"m6","ad":"F. Arslan","tel":"","bb":"6","kat":"2","pay":84,"durum":"olumsuz","engel":[],"kiraci":false,"son":"","not":"Paylaşım oranını yetersiz buluyor.","gor":[]},{"id":"m7","ad":"G. Doğan","tel":"","bb":"7","kat":"3","pay":84,"durum":"kararsiz","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"m8","ad":"H. Aydın","tel":"","bb":"8","kat":"3","pay":84,"durum":"ulasilamadi","engel":["yurtdisi"],"kiraci":false,"son":"","not":"Yurtdışında, vekil aranıyor.","gor":[]},{"id":"m9","ad":"I. Koç","tel":"","bb":"9","kat":"4","pay":84,"durum":"olumlu","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"m10","ad":"J. Özkan","tel":"","bb":"10","kat":"4","pay":84,"durum":"kararsiz","engel":["ipotek"],"kiraci":false,"son":"","not":"","gor":[]},{"id":"m11","ad":"K. Polat","tel":"","bb":"11","kat":"5","pay":74,"durum":"olumsuz","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"m12","ad":"L. Ünal","tel":"","bb":"12","kat":"5","pay":74,"durum":"ulasilamadi","engel":[],"kiraci":false,"son":"","not":"","gor":[]}],"teklifler":[]},{"id":"b2","ad":"Örnek — Bahariye Apartmanı","il":"İstanbul","ilce":"Kadıköy","mahalle":"Osmanağa","ada":"456","parsel":"18","adres":"Örnek Cad. No:44","arsaM2":410,"emsal":2.5,"taks":0.45,"mevcutKat":4,"riskli":"kesinlesti","asama":"ihale","payda":800,"notlar":"Örnek kayıt.","agirliklar":{"malikPayi":40,"kira":10,"nakdi":10,"sure":10,"teminat":15,"teknik":15},"agirlikKilit":"2026-07-14","malikler":[{"id":"n1","ad":"M. Erdoğan","tel":"","bb":"1","kat":"Zemin","pay":110,"durum":"olumlu","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"n2","ad":"N. Bulut","tel":"","bb":"2","kat":"Zemin","pay":100,"durum":"olumlu","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"n3","ad":"O. Tekin","tel":"","bb":"3","kat":"1","pay":100,"durum":"olumlu","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"n4","ad":"P. Aksoy","tel":"","bb":"4","kat":"1","pay":100,"durum":"olumlu","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"n5","ad":"R. Güneş","tel":"","bb":"5","kat":"2","pay":100,"durum":"olumlu","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"n6","ad":"S. Yıldız","tel":"","bb":"6","kat":"2","pay":100,"durum":"kararsiz","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"n7","ad":"T. Kurt","tel":"","bb":"7","kat":"3","pay":95,"durum":"olumlu","engel":[],"kiraci":false,"son":"","not":"","gor":[]},{"id":"n8","ad":"U. Avcı","tel":"","bb":"8","kat":"3","pay":95,"durum":"olumsuz","engel":[],"kiraci":false,"son":"","not":"","gor":[]}],"teklifler":[{"id":"t1","mid":"c1","malikPayi":52,"kiraAy":24,"kiraTutar":25000,"nakdi":0,"sureAy":24,"teminat":9000000,"teknik":78,"tarih":"2026-07-20","not":"Standart teklif."},{"id":"t2","mid":"c2","malikPayi":55,"kiraAy":18,"kiraTutar":22000,"nakdi":250000,"sureAy":28,"teminat":7500000,"teknik":85,"tarih":"2026-07-20","not":"Pay yüksek, süre uzun."},{"id":"t3","mid":"c3","malikPayi":50,"kiraAy":30,"kiraTutar":28000,"nakdi":150000,"sureAy":22,"teminat":12000000,"teknik":66,"tarih":"2026-07-21","not":"Teminat güçlü."}]}],"muteahhitler":[{"id":"c1","unvan":"Örnek Yapı A.Ş.","yetkili":"—","tel":"","email":"","ymbn":"B","vergiNo":"","referans":"3 proje / Kadıköy","durum":"aktif","nda":true,"ndaTarih":"2026-06-02","taahhut":true,"not":""},{"id":"c2","unvan":"Örnek İnşaat Ltd. Şti.","yetkili":"—","tel":"","email":"","ymbn":"C","vergiNo":"","referans":"1 proje / Ataşehir","durum":"aktif","nda":true,"ndaTarih":"2026-06-05","taahhut":true,"not":""},{"id":"c3","unvan":"Örnek Gayrimenkul","yetkili":"—","tel":"","email":"","ymbn":"B","vergiNo":"","referans":"5 proje / Üsküdar","durum":"degerlendirmede","nda":true,"ndaTarih":"2026-06-11","taahhut":false,"not":"Devre dışı bırakmama taahhüdü henüz imzalanmadı."}]}</script>
+
+<div class="shell" id="app">
+  <nav class="rail">
+    <div class="brand"><b>Kentsel Rota</b><span>Proje Panosu</span></div>
+    <button class="navbtn" data-act="tab" data-tab="panel"><span class="ic">▦</span>Panel<span class="cnt" id="c-bina"></span></button>
+    <button class="navbtn" data-act="tab" data-tab="fizibilite"><span class="ic">◱</span>Fizibilite</button>
+    <button class="navbtn" data-act="tab" data-tab="muteahhit"><span class="ic">⚑</span>Müteahhitler<span class="cnt" id="c-mut"></span></button>
+    <button class="navbtn" data-act="tab" data-tab="teklif"><span class="ic">⇄</span>Teklifler<span class="cnt" id="c-tek"></span></button>
+    <button class="navbtn" data-act="tab" data-tab="yedek"><span class="ic">⤓</span>Yedek</button>
+    <div class="railfoot">
+      <div class="savechip"><span class="dot" id="sdot"></span><span id="stxt">Hazır</span></div>
+      <button class="btn ghost sm" data-act="theme" style="justify-content:flex-start">◐ Tema</button>
+    </div>
+  </nav>
+  <main class="main" id="view"></main>
+</div>
+
+<dialog id="modal">
+  <form method="dialog" id="mform">
+    <div class="dhead"><h2 id="mtitle"></h2><button type="button" class="x" data-act="mclose" aria-label="Kapat">×</button></div>
+    <div class="dbody" id="mbody"></div>
+    <div class="dfoot">
+      <button type="button" class="btn" data-act="mclose">Vazgeç</button>
+      <button type="submit" class="btn pri" id="msubmit">Kaydet</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+"use strict";
+
+/* ============ sabitler ============ */
+const ASAMALAR = [
+  ["tespit","Tespit & Ön Fizibilite"],
+  ["gorusme","Malik Görüşmeleri"],
+  ["yetki","Münhasır Yetki"],
+  ["sartname","Şartname & Avam Proje"],
+  ["ihale","İhale / Teklif"],
+  ["sozlesme","Sözleşme & Teminat"],
+  ["insaat","İnşaat"],
+  ["iskan","İskan"],
+  ["kayip","Beklemede / Kayıp"],
+];
+const ASAMA_AD = Object.fromEntries(ASAMALAR);
+const DURUMLAR = [["olumlu","Olumlu"],["kararsiz","Kararsız"],["ulasilamadi","Ulaşılamadı"],["olumsuz","Olumsuz"]];
+const DURUM_AD = Object.fromEntries(DURUMLAR);
+const RISKLI = [["yok","Başvuru yok"],["basvuruldu","Başvuruldu"],["onaylandi","Rapor onaylandı"],["kesinlesti","Kesinleşti"],["itiraz","İtiraz sürecinde"]];
+const RISKLI_AD = Object.fromEntries(RISKLI);
+const ENGELLER = [["ipotek","İpotek"],["haciz","Haciz"],["intikal","İntikal eksik"],["vesayet","Vesayet / kayyum"],["serh","Şerh"],["paydas","Hisseli / paydaş"],["yurtdisi","Yurtdışında"]];
+const ENGEL_AD = Object.fromEntries(ENGELLER);
+const YMBN = ["A","B","C","D","E","F","G","H"];
+const KRITERLER = [
+  ["malikPayi","Malik payı (%)",true],
+  ["kira","Kira yardımı (toplam)",true],
+  ["nakdi","Nakdi destek",true],
+  ["sure","Teslim süresi (ay)",false],
+  ["teminat","Teminat mektubu",true],
+  ["teknik","Teknik / referans puanı",true],
+];
+
+/* ============ durum ============ */
+let S = null, filesMode = null, saveTimer = null, dirty = false;
+let V = { tab:"panel", binaId:null, tekBina:null };
+
+const $ = s => document.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const uid = () => "x" + Math.random().toString(36).slice(2,9) + Date.now().toString(36).slice(-3);
+const n = v => { const x = parseFloat(String(v).replace(",", ".")); return isFinite(x) ? x : 0; };
+const tl = v => n(v).toLocaleString("tr-TR");
+const pc = v => (Math.round(v*10)/10).toLocaleString("tr-TR",{minimumFractionDigits:1,maximumFractionDigits:1});
+const bina = id => S.binalar.find(b => b.id === id);
+const mut = id => S.muteahhitler.find(c => c.id === id);
+
+/* ============ hesap ============ */
+function payda(b){ return n(b.payda) || b.malikler.reduce((a,m)=>a+n(m.pay),0) || 1; }
+function paySum(b, d){ return b.malikler.filter(m=>m.durum===d).reduce((a,m)=>a+n(m.pay),0); }
+function ozet(b){
+  const P = payda(b);
+  const olumlu = paySum(b,"olumlu"), kararsiz = paySum(b,"kararsiz"),
+        olumsuz = paySum(b,"olumsuz"), ulas = paySum(b,"ulasilamadi");
+  const toplamGirilen = olumlu+kararsiz+olumsuz+ulas;
+  const esik = P/2;
+  const yuzde = P ? olumlu/P*100 : 0;
+  const gecti = olumlu > esik;
+  const kalanPay = Math.max(0, Math.ceil(esik - olumlu + 0.0001));
+  const kisiOlumlu = b.malikler.filter(m=>m.durum==="olumlu").length;
+
+  const adaylar = b.malikler.filter(m=>m.durum==="kararsiz"||m.durum==="ulasilamadi")
+                            .slice().sort((a,c)=>n(c.pay)-n(a.pay));
+  let acc=0; const hedef=[];
+  for(const m of adaylar){ if(olumlu+acc > esik) break; hedef.push(m); acc+=n(m.pay); }
+  const hedefYeter = olumlu+acc > esik;
+  const tumAdayPay = adaylar.reduce((a,m)=>a+n(m.pay),0);
+  const olumsuzGerek = olumlu+tumAdayPay > esik ? 0 : Math.ceil(esik-(olumlu+tumAdayPay)+0.0001);
+
+  return {P,olumlu,kararsiz,olumsuz,ulas,toplamGirilen,esik,yuzde,gecti,kalanPay,
+          kisiOlumlu,kisi:b.malikler.length,hedef,hedefYeter,olumsuzGerek,
+          engelli:b.malikler.filter(m=>(m.engel||[]).length).length};
+}
+function insaatAlani(b){ return n(b.arsaM2) * n(b.emsal); }
+
+/* ============ kayıt ============ */
+function setSave(kind, msg){
+  const d = $("#sdot"), t = $("#stxt");
+  d.className = "dot" + (kind ? " "+kind : "");
+  t.textContent = msg;
+}
+function queueSave(){
+  dirty = true; setSave("busy","Kaydediliyor…");
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(doSave, 900);
+}
+async function doSave(){
+  const art = await window.claude?.use?.("artifact");
+  if(!art){ setSave("err","Kayıt yok — önizleme"); return; }
+  const json = JSON.stringify(S).replace(/</g,"\\u003c");
+  try{
+    if(filesMode !== false){
+      try{
+        await art.publish({ "data/state.json": { content: json, contentType: "application/json" } });
+        filesMode = true; dirty = false; setSave("ok","Kaydedildi"); return;
+      }catch(e){
+        const c = e && e.code;
+        if(c==="capability_disabled"||c==="capability_removed"||c==="transform_error"){ filesMode=false; }
+        else throw e;
+      }
+    }
+    const src = await pageSource();
+    const re = /(<script type="application\/json" id="app-state">)[\s\S]*?(<\/script>)/;
+    if(!re.test(src)) throw {code:"invalid_content", message:"durum bloğu bulunamadı"};
+    await art.publish(src.replace(re, (m,a,z)=> a + json + z));
+    dirty = false; setSave("ok","Kaydedildi — yenileniyor");
+  }catch(e){
+    const c = e && e.code;
+    if(c==="conflict"){ setSave("busy","Başkası kaydetti — sayfa yenileniyor"); return; }
+    if(c==="not_writer"||c==="not_granted"||c==="consent_required"||c==="not_declared"){
+      setSave("err","Salt okunur görünüm"); return;
+    }
+    if(c==="rate_limited"){ setSave("err","Çok sık kayıt — biraz bekle"); setTimeout(doSave,4000); return; }
+    if(c==="too_large"){ setSave("err","Veri çok büyük"); return; }
+    setSave("err","Kaydedilemedi — tekrar deneniyor"); setTimeout(doSave, 5000);
+  }
+}
+async function pageSource(){
+  for(const u of ["index.html", location.pathname, location.href]){
+    try{ const r = await fetch(u, {cache:"no-store"}); if(r.ok){ const t = await r.text(); if(/id="app-state"/.test(t)) return t; } }catch(_){}
+  }
+  throw {code:"upstream_error", message:"kaynak okunamadı"};
+}
+async function loadState(){
+  const embedded = JSON.parse($("#app-state").textContent);
+  try{
+    const r = await fetch("data/state.json", {cache:"no-store"});
+    if(r.ok){ const j = await r.json(); if(j && Array.isArray(j.binalar)){ filesMode = true; return j; } }
+  }catch(_){}
+  return embedded;
+}
+
+/* ============ görünüm parçaları ============ */
+function stripHTML(b, big){
+  const o = ozet(b);
+  const order = {olumlu:0,kararsiz:1,ulasilamadi:2,olumsuz:3};
+  const ms = b.malikler.slice().sort((a,c)=> (order[a.durum]-order[c.durum]) || (n(c.pay)-n(a.pay)));
+  const segs = ms.map(m=>{
+    const w = o.P ? n(m.pay)/o.P*100 : 0;
+    return `<div class="seg ${m.durum}" style="width:${w.toFixed(3)}%" title="${esc(m.ad)} · D.${esc(m.bb)} · ${tl(m.pay)}/${tl(o.P)} pay · ${DURUM_AD[m.durum]}"></div>`;
+  }).join("");
+  const bos = o.P > o.toplamGirilen ? `<div class="seg" style="width:${((o.P-o.toplamGirilen)/o.P*100).toFixed(3)}%;background:var(--surface-3)" title="Girilmemiş pay: ${tl(o.P-o.toplamGirilen)}"></div>` : "";
+  return `<div class="strip-wrap"><div class="strip${big?" lg":""}">${segs}${bos}</div><div class="thresh"></div></div>`;
+}
+function readoutHTML(b){
+  const o = ozet(b);
+  return `<div class="readout">
+    <span class="big ${o.gecti?"pass":"fail"}">%${pc(o.yuzde)}</span>
+    <span class="lbl">arsa payı</span>
+    <span class="kisi">· ${o.kisiOlumlu}/${o.kisi} kişi</span>
+    <span class="verdict ${o.gecti?"pass":"fail"}">${o.gecti?"✓ Çoğunluk var":`${tl(o.kalanPay)} pay eksik`}</span>
+  </div>`;
+}
+function hedefHTML(b){
+  const o = ozet(b);
+  if(o.gecti) return `<div class="callout"><b>Çoğunluk sağlandı.</b> Olumlu arsa payı ${tl(o.olumlu)}/${tl(o.P)} — eşiğin ${tl(Math.floor(o.olumlu-o.esik))} pay üzerinde. Sıradaki adım: yetki sözleşmesi ve şartname.</div>`;
+  if(!o.hedef.length) return `<div class="callout bad"><b>Aday kalmadı.</b> Kararsız veya ulaşılamayan malik yok; eşiği geçmek için olumsuz görüş bildirenlerden en az <b>${tl(o.olumsuzGerek||o.kalanPay)} pay</b> kazanılmalı.</div>`;
+  const chips = o.hedef.map((m,i)=>`<span class="tchip"><span class="rk">${i+1}</span>${esc(m.ad)} <span class="pv">D.${esc(m.bb)} · ${tl(m.pay)}</span></span>`).join("");
+  const uyari = o.hedefYeter ? "" :
+    `<div class="callout bad" style="margin-top:10px"><b>Dikkat:</b> kararsız ve ulaşılamayan maliklerin <em>tamamı</em> olumluya dönse bile eşik geçilmiyor. Olumsuz görüş bildirenlerden en az <b>${tl(o.olumsuzGerek)} pay</b> gerekiyor.</div>`;
+  return `<div class="callout">
+      <b>En kısa yol — ${o.hedef.length} malik.</b> Arsa payı en büyük adaylar; bu ${o.hedef.length} kişi olumluya dönerse eşik geçilir.
+      <div class="target" style="margin-top:9px">${chips}</div>
+    </div>${uyari}`;
+}
+function engelPills(m){
+  return (m.engel||[]).map(e=>`<span class="pill warnflag">${esc(ENGEL_AD[e]||e)}</span>`).join(" ");
+}
+
+/* ============ görünümler ============ */
+function vPanel(){
+  const cols = ASAMALAR.map(([k,ad])=>{
+    const bs = S.binalar.filter(b=>b.asama===k);
+    if(!bs.length && (k==="kayip"||k==="iskan"||k==="insaat")) return "";
+    return `<div class="col">
+      <div class="colhead"><span>${esc(ad)}</span><span class="n">${bs.length}</span><span class="bar"></span></div>
+      <div class="stack">
+        ${bs.map(cardHTML).join("") || `<div class="card" style="cursor:default;border-style:dashed;box-shadow:none;color:var(--faint);font-size:12.5px;justify-content:center;min-height:64px">Bu aşamada bina yok</div>`}
+      </div></div>`;
+  }).join("");
+
+  const tot = S.binalar.length;
+  const gecen = S.binalar.filter(b=>ozet(b).gecti).length;
+  const bbTop = S.binalar.reduce((a,b)=>a+b.malikler.length,0);
+  const engelli = S.binalar.reduce((a,b)=>a+ozet(b).engelli,0);
+
+  return `<div class="head">
+      <div><h1>Proje Panosu</h1>
+      <div class="sub">Her bina bir kart. Şerit, bağımsız bölümlerin <b>arsa payı</b> ağırlığını gösterir — kesikli çizgi %50 eşiği. Karar bu çizgiye göre verilir, kişi sayısına göre değil.</div></div>
+      <div class="acts"><button class="btn pri" data-act="bina-yeni">+ Bina ekle</button></div>
+    </div>
+    <div class="grid3" style="margin-bottom:20px">
+      <div class="stat"><span class="k">Takipteki bina</span><span class="v">${tot}</span><span class="n">${bbTop} bağımsız bölüm</span></div>
+      <div class="stat"><span class="k">Çoğunluk sağlanan</span><span class="v" style="color:var(--ok)">${gecen}</span><span class="n">arsa payı &gt; %50</span></div>
+      <div class="stat"><span class="k">Hukuki engelli malik</span><span class="v" style="color:${engelli?"var(--warn)":"inherit"}">${engelli}</span><span class="n">ipotek · intikal · vesayet</span></div>
+      <div class="stat"><span class="k">Müteahhit havuzu</span><span class="v">${S.muteahhitler.length}</span><span class="n">${S.muteahhitler.filter(c=>c.taahhut).length} taahhütlü</span></div>
+    </div>
+    <div class="legend" style="margin-bottom:12px">
+      <span><i style="background:var(--ok-line)"></i>Olumlu</span>
+      <span><i style="background:var(--warn-line)"></i>Kararsız</span>
+      <span><i style="background:var(--idle-line)"></i>Ulaşılamadı</span>
+      <span><i style="background:var(--bad-line)"></i>Olumsuz</span>
+      <span><i style="background:var(--surface-3);border:1px solid var(--border-strong)"></i>Girilmemiş pay</span>
+    </div>
+    <div class="board">${cols}</div>`;
+}
+function cardHTML(b){
+  const o = ozet(b);
+  const eksik = o.P > o.toplamGirilen;
+  return `<button class="card" data-act="bina-ac" data-id="${b.id}">
+    <div class="top"><h3>${esc(b.ad)}</h3><span class="loc">${esc(b.ada)}/${esc(b.parsel)}</span></div>
+    <div class="meta">
+      <span>${esc(b.ilce)}${b.mahalle?" · "+esc(b.mahalle):""}</span>
+      <span><b>${tl(b.arsaM2)}</b> m²</span>
+      <span>E: <b>${(n(b.emsal)||0).toLocaleString("tr-TR")}</b></span>
+    </div>
+    ${stripHTML(b)}
+    ${readoutHTML(b)}
+    <div class="meta">
+      <span class="pill ${b.riskli==="kesinlesti"||b.riskli==="onaylandi"?"acc":"neutral"}">${esc(RISKLI_AD[b.riskli]||"—")}</span>
+      ${o.engelli?`<span class="pill warnflag">${o.engelli} hukuki engel</span>`:""}
+      ${eksik?`<span class="pill warnflag">Pay toplamı eksik</span>`:""}
+      ${b.teklifler.length?`<span class="pill neutral">${b.teklifler.length} teklif</span>`:""}
+    </div>
+  </button>`;
+}
+
+function vBina(){
+  const b = bina(V.binaId); if(!b){ V.tab="panel"; return vPanel(); }
+  const o = ozet(b);
+  const ms = b.malikler.slice().sort((a,c)=> n(c.pay)-n(a.pay));
+  const rows = ms.map(m=>`<tr>
+      <td class="num">${esc(m.bb)}</td>
+      <td><div style="font-weight:500">${esc(m.ad)}</div>
+        <div style="font-size:11.5px;color:var(--faint)">${esc(m.kat?("Kat "+m.kat):"")}${m.kiraci?" · kiracılı":""}${m.tel?" · "+esc(m.tel):""}</div></td>
+      <td class="num">${tl(m.pay)}<div style="font-size:11px;color:var(--faint)">%${pc(o.P?n(m.pay)/o.P*100:0)}</div></td>
+      <td><div class="segctl">${DURUMLAR.map(([k,ad])=>
+          `<button type="button" class="${k}" aria-pressed="${m.durum===k}" data-act="durum" data-b="${b.id}" data-m="${m.id}" data-v="${k}" title="${ad}">${ad.slice(0,3)}</button>`).join("")}</div></td>
+      <td>${engelPills(m)||`<span style="color:var(--faint)">—</span>`}</td>
+      <td style="max-width:220px;font-size:12.5px;color:var(--muted)">${esc(m.not)||"—"}</td>
+      <td><div class="rowact">
+        <button class="btn sm ghost" data-act="malik-duzenle" data-b="${b.id}" data-m="${m.id}">Düzenle</button>
+        <button class="btn sm ghost" data-act="malik-sil" data-b="${b.id}" data-m="${m.id}" title="Sil">×</button>
+      </div></td>
+    </tr>`).join("");
+
+  const eksikUyari = o.P !== o.toplamGirilen ?
+    `<div class="callout warn" style="margin-bottom:14px"><b>Pay toplamı tutmuyor.</b> Girilen paylar ${tl(o.toplamGirilen)}, binanın paydası ${tl(o.P)}. Çoğunluk hesabı paydaya göre yapılıyor — eksik pay girilmemiş malik olarak sayılıyor.</div>` : "";
+
+  return `<div class="crumb"><button data-act="tab" data-tab="panel">← Panel</button><span>/</span><span>${esc(b.ad)}</span></div>
+    <div class="head">
+      <div><h1>${esc(b.ad)}</h1>
+      <div class="sub mono" style="font-size:12.5px">${esc(b.il)} / ${esc(b.ilce)}${b.mahalle?" / "+esc(b.mahalle):""} · Ada ${esc(b.ada)} Parsel ${esc(b.parsel)}${b.adres?" · "+esc(b.adres):""}</div></div>
+      <div class="acts">
+        <button class="btn" data-act="bina-duzenle" data-id="${b.id}">Bina bilgileri</button>
+        <button class="btn" data-act="malik-csv" data-id="${b.id}">CSV indir</button>
+        <button class="btn pri" data-act="malik-yeni" data-id="${b.id}">+ Malik</button>
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="phead"><span class="eyebrow">Pay Şeridi</span><h2>Çoğunluk durumu</h2>
+        <div class="acts"><span class="pill neutral">Aşama: ${esc(ASAMA_AD[b.asama]||"—")}</span><button class="btn sm" data-act="asama" data-id="${b.id}">Aşama değiştir</button></div></div>
+      <div class="pbody">
+        ${stripHTML(b,true)}
+        <div style="margin:14px 0 16px">${readoutHTML(b)}</div>
+        <div class="grid3" style="margin-bottom:16px">
+          <div class="stat"><span class="k">Olumlu</span><span class="v" style="color:var(--ok)">${tl(o.olumlu)}</span><span class="n">${b.malikler.filter(m=>m.durum==="olumlu").length} kişi · %${pc(o.P?o.olumlu/o.P*100:0)}</span></div>
+          <div class="stat"><span class="k">Kararsız</span><span class="v" style="color:var(--warn)">${tl(o.kararsiz)}</span><span class="n">${b.malikler.filter(m=>m.durum==="kararsiz").length} kişi</span></div>
+          <div class="stat"><span class="k">Ulaşılamadı</span><span class="v" style="color:var(--idle)">${tl(o.ulas)}</span><span class="n">${b.malikler.filter(m=>m.durum==="ulasilamadi").length} kişi</span></div>
+          <div class="stat"><span class="k">Olumsuz</span><span class="v" style="color:var(--bad)">${tl(o.olumsuz)}</span><span class="n">${b.malikler.filter(m=>m.durum==="olumsuz").length} kişi</span></div>
+        </div>
+        ${eksikUyari}
+        ${hedefHTML(b)}
+      </div>
+    </div>
+
+    <div class="panel">
+      <div class="phead"><span class="eyebrow">${b.malikler.length} kayıt</span><h2>Kat malikleri</h2>
+        <div class="acts"><button class="btn sm" data-act="malik-toplu" data-id="${b.id}">Toplu daire oluştur</button></div></div>
+      <div class="pbody flush"><div class="tw"><table>
+        <thead><tr><th class="num">BB</th><th>Malik</th><th class="num">Arsa payı</th><th>Tavır</th><th>Hukuki engel</th><th>Not</th><th></th></tr></thead>
+        <tbody>${rows || `<tr><td colspan="7"><div class="empty"><h3>Henüz malik girilmemiş</h3><p>Bağımsız bölümleri tek tek ekleyebilir veya "Toplu daire oluştur" ile hepsini bir seferde açabilirsin.</p><button class="btn pri" data-act="malik-toplu" data-id="${b.id}">Toplu daire oluştur</button></div></td></tr>`}</tbody>
+      </table></div></div>
+    </div>
+
+    ${b.notlar?`<div class="panel"><div class="phead"><h2>Bina notları</h2></div><div class="pbody" style="color:var(--muted);white-space:pre-wrap">${esc(b.notlar)}</div></div>`:""}`;
+}
+
+function vFizibilite(){
+  const rows = S.binalar.map(b=>{
+    const o = ozet(b), ia = insaatAlani(b);
+    return `<tr>
+      <td><div style="font-weight:500">${esc(b.ad)}</div><div style="font-size:11.5px;color:var(--faint)" class="mono">${esc(b.ada)}/${esc(b.parsel)} · ${esc(b.ilce)}</div></td>
+      <td class="num">${tl(b.arsaM2)}</td>
+      <td class="num">${(n(b.emsal)||0).toLocaleString("tr-TR")}</td>
+      <td class="num">${(n(b.taks)||0).toLocaleString("tr-TR")}</td>
+      <td class="num"><b>${tl(Math.round(ia))}</b></td>
+      <td class="num">${b.mevcutKat||"—"}</td>
+      <td><span class="pill ${b.riskli==="kesinlesti"?"acc":b.riskli==="yok"?"neutral":"warnflag"}">${esc(RISKLI_AD[b.riskli]||"—")}</span></td>
+      <td class="num">${b.malikler.length}</td>
+      <td class="num">${o.engelli?`<span style="color:var(--warn);font-weight:600">${o.engelli}</span>`:"0"}</td>
+      <td><div class="rowact"><button class="btn sm ghost" data-act="bina-duzenle" data-id="${b.id}">Düzenle</button></div></td>
+    </tr>`;
+  }).join("");
+  const topIa = S.binalar.reduce((a,b)=>a+insaatAlani(b),0);
+  const topM2 = S.binalar.reduce((a,b)=>a+n(b.arsaM2),0);
+  const risksiz = S.binalar.filter(b=>b.riskli==="yok").length;
+
+  return `<div class="head">
+      <div><h1>Fizibilite</h1>
+      <div class="sub">İmar verisi ve riskli yapı statüsü. <b>Riskli yapı statüsü olmayan binada</b> yıkım kararı Kat Mülkiyeti Kanunu'na tabidir ve pratikte oybirliği gerekir — %50+1 mimarisi ancak riskli yapı raporu kesinleştikten sonra dayanak bulur.</div></div>
+      <div class="acts"><button class="btn pri" data-act="bina-yeni">+ Bina ekle</button></div>
+    </div>
+    <div class="grid3" style="margin-bottom:18px">
+      <div class="stat"><span class="k">Toplam arsa</span><span class="v">${tl(Math.round(topM2))}</span><span class="n">m²</span></div>
+      <div class="stat"><span class="k">Toplam emsal alanı</span><span class="v">${tl(Math.round(topIa))}</span><span class="n">m² · arsa × emsal</span></div>
+      <div class="stat"><span class="k">Riskli yapı başvurusu yok</span><span class="v" style="color:${risksiz?"var(--warn)":"inherit"}">${risksiz}</span><span class="n">bina · hukuki dayanak eksik</span></div>
+    </div>
+    ${risksiz?`<div class="callout warn" style="margin-bottom:16px"><b>${risksiz} binada riskli yapı başvurusu yok.</b> Karot ve riskli yapı tespitini malik görüşmelerinden önce başlat — sonra başlatılırsa çoğunluk mimarisi boşta kalır.</div>`:""}
+    <div class="panel"><div class="pbody flush"><div class="tw"><table>
+      <thead><tr><th>Bina</th><th class="num">Arsa m²</th><th class="num">Emsal</th><th class="num">TAKS</th><th class="num">Emsal alanı m²</th><th class="num">Mevcut kat</th><th>Riskli yapı</th><th class="num">BB</th><th class="num">Engel</th><th></th></tr></thead>
+      <tbody>${rows||`<tr><td colspan="10"><div class="empty"><h3>Bina yok</h3><p>Panele bina ekledikçe fizibilite verisi burada toplanır.</p></div></td></tr>`}</tbody>
+    </table></div></div></div>`;
+}
+
+function vMuteahhit(){
+  const rows = S.muteahhitler.map(c=>{
+    const tekSay = S.binalar.reduce((a,b)=>a+b.teklifler.filter(t=>t.mid===c.id).length,0);
+    return `<tr>
+      <td><div style="font-weight:500">${esc(c.unvan)}</div><div style="font-size:11.5px;color:var(--faint)">${esc(c.yetkili)||"—"}${c.tel?" · "+esc(c.tel):""}</div></td>
+      <td><span class="pill ${["A","B"].includes(c.ymbn)?"acc":"neutral"}">Grup ${esc(c.ymbn)}</span></td>
+      <td style="font-size:12.5px;color:var(--muted)">${esc(c.referans)||"—"}</td>
+      <td>${c.nda?`<span class="pill olumlu">NDA ✓</span>`:`<span class="pill olumsuz">NDA yok</span>`}</td>
+      <td>${c.taahhut?`<span class="pill olumlu">Taahhüt ✓</span>`:`<span class="pill kararsiz">İmzasız</span>`}</td>
+      <td class="num">${tekSay}</td>
+      <td><span class="pill ${c.durum==="aktif"?"acc":c.durum==="kara"?"olumsuz":"neutral"}">${c.durum==="aktif"?"Aktif":c.durum==="kara"?"Kara liste":"Değerlendirmede"}</span></td>
+      <td><div class="rowact">
+        <button class="btn sm ghost" data-act="mut-duzenle" data-id="${c.id}">Düzenle</button>
+        <button class="btn sm ghost" data-act="mut-sil" data-id="${c.id}">×</button></div></td>
+    </tr>`;
+  }).join("");
+  const eksikTaahhut = S.muteahhitler.filter(c=>!c.taahhut).length;
+  return `<div class="head">
+      <div><h1>Müteahhit Havuzu</h1>
+      <div class="sub">İhale dosyası açılmadan önce her yüklenici <b>NDA + devre dışı bırakmama taahhüdü</b> imzalamalı. İmzasız yükleniciye ada/parsel bilgisi verme — teaser yeterli.</div></div>
+      <div class="acts"><button class="btn pri" data-act="mut-yeni">+ Müteahhit ekle</button></div>
+    </div>
+    ${eksikTaahhut?`<div class="callout warn" style="margin-bottom:16px"><b>${eksikTaahhut} yüklenicide devre dışı bırakmama taahhüdü yok.</b> Tam dosyayı paylaşmadan önce imzalat; imzasız paylaşımda ihlali ispat edemezsin.</div>`:""}
+    <div class="panel"><div class="pbody flush"><div class="tw"><table>
+      <thead><tr><th>Yüklenici</th><th>YMBN</th><th>Referans</th><th>Gizlilik</th><th>Devre dışı bırakmama</th><th class="num">Teklif</th><th>Durum</th><th></th></tr></thead>
+      <tbody>${rows||`<tr><td colspan="8"><div class="empty"><h3>Havuz boş</h3><p>Teklif toplayacağın yüklenicileri ekle; her biri için YMBN grubu ve imzalı belgeleri takip et.</p><button class="btn pri" data-act="mut-yeni">+ Müteahhit ekle</button></div></td></tr>`}</tbody>
+    </table></div></div></div>`;
+}
+
+function vTeklif(){
+  const withT = S.binalar;
+  if(!withT.length) return `<div class="head"><div><h1>Teklif Karşılaştırma</h1></div></div>
+    <div class="panel"><div class="empty"><h3>Bina yok</h3><p>Önce panele bina ekle, sonra o binaya gelen teklifleri buraya girip ağırlıklı matrisle karşılaştır.</p></div></div>`;
+  if(!V.tekBina || !bina(V.tekBina)) V.tekBina = withT[0].id;
+  const b = bina(V.tekBina);
+  const W = b.agirliklar;
+  const wTop = KRITERLER.reduce((a,[k])=>a+n(W[k]),0) || 1;
+
+  const vals = k => b.teklifler.map(t => k==="kira" ? n(t.kiraAy)*n(t.kiraTutar) : k==="sure" ? n(t.sureAy) : n(t[k]));
+  const ranges = {}; KRITERLER.forEach(([k])=>{ const v = vals(k); ranges[k] = [Math.min(...v), Math.max(...v)]; });
+  const skor = t => KRITERLER.reduce((a,[k,,hi])=>{
+    const [mn,mx] = ranges[k]; const v = k==="kira"? n(t.kiraAy)*n(t.kiraTutar) : k==="sure"? n(t.sureAy) : n(t[k]);
+    const nv = mx===mn ? 1 : (hi ? (v-mn)/(mx-mn) : (mx-v)/(mx-mn));
+    return a + n(W[k])*nv;
+  },0) / wTop * 100;
+
+  const sirali = b.teklifler.map(t=>({t, s:skor(t)})).sort((a,c)=>c.s-a.s);
+  const rows = sirali.map(({t,s},i)=>{
+    const c = mut(t.mid);
+    return `<tr>
+      <td class="num" style="font-weight:600;color:${i===0?"var(--ok)":"inherit"}">${i+1}</td>
+      <td><div style="font-weight:500">${esc(c?c.unvan:"—")}</div><div style="font-size:11.5px;color:var(--faint)">${c?"Grup "+esc(c.ymbn):""}${t.tarih?" · "+esc(t.tarih):""}${c&&!c.taahhut?' · <span style="color:var(--warn)">taahhüt yok</span>':""}</div></td>
+      <td class="num" style="font-weight:600">%${(n(t.malikPayi)).toLocaleString("tr-TR")}</td>
+      <td class="num">${tl(n(t.kiraAy)*n(t.kiraTutar))}<div style="font-size:11px;color:var(--faint)">${t.kiraAy} ay × ${tl(t.kiraTutar)}</div></td>
+      <td class="num">${tl(t.nakdi)}</td>
+      <td class="num">${t.sureAy} ay</td>
+      <td class="num">${tl(t.teminat)}</td>
+      <td class="num">${t.teknik}</td>
+      <td class="num"><span style="font-family:'IBM Plex Mono',monospace;font-size:15px;font-weight:600;color:${i===0?"var(--ok)":"inherit"}">${s.toFixed(1)}</span></td>
+      <td><div class="rowact">
+        <button class="btn sm ghost" data-act="tek-duzenle" data-b="${b.id}" data-t="${t.id}">Düzenle</button>
+        <button class="btn sm ghost" data-act="tek-sil" data-b="${b.id}" data-t="${t.id}">×</button></div></td>
+    </tr>`;
+  }).join("");
+
+  const wrows = KRITERLER.map(([k,ad,hi])=>`<div class="wrow">
+      <label for="w-${k}">${ad} <span style="color:var(--faint);font-size:11.5px">${hi?"↑ yüksek iyi":"↓ düşük iyi"}</span></label>
+      <input id="w-${k}" type="number" min="0" max="100" step="5" value="${n(W[k])}" data-act="agirlik" data-b="${b.id}" data-k="${k}" ${b.agirlikKilit?"disabled":""}>
+    </div>`).join("");
+
+  return `<div class="head">
+      <div><h1>Teklif Karşılaştırma</h1>
+      <div class="sub">Ağırlıklar <b>teklifler açılmadan önce</b> belirlenip kilitlenmeli. Kilitli ağırlık, maliklere "puanlama sonradan eğilmedi" diyebilmenin tek yolu.</div></div>
+      <div class="acts">
+        <select data-act="tek-bina" style="background:var(--surface);border:1px solid var(--border-strong);border-radius:var(--r-sm);padding:7px 9px">
+          ${S.binalar.map(x=>`<option value="${x.id}" ${x.id===b.id?"selected":""}>${esc(x.ad)}</option>`).join("")}
+        </select>
+        <button class="btn pri" data-act="tek-yeni" data-id="${b.id}">+ Teklif ekle</button>
+      </div>
+    </div>
+    <div class="grid2" style="align-items:start;gap:16px">
+      <div class="panel" style="grid-column:span 1">
+        <div class="phead"><span class="eyebrow">Değerlendirme</span><h2>Kriter ağırlıkları</h2>
+          <div class="acts">${b.agirlikKilit
+            ? `<span class="pill acc">🔒 ${esc(b.agirlikKilit)}</span><button class="btn sm ghost" data-act="agirlik-ac" data-id="${b.id}">Kilidi aç</button>`
+            : `<button class="btn sm" data-act="agirlik-kilit" data-id="${b.id}">Kilitle</button>`}</div></div>
+        <div class="pbody">
+          ${wrows}
+          <div style="display:flex;justify-content:space-between;padding-top:9px;margin-top:6px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)">
+            <span>Toplam</span><span class="mono" style="font-weight:600;color:${wTop===100?"var(--ok)":"var(--warn)"}">${wTop}</span></div>
+          ${wTop!==100?`<div class="hint" style="font-size:11.5px;color:var(--warn);margin-top:6px">Toplam 100 değil — puanlar yine de orantılı hesaplanır.</div>`:""}
+        </div>
+      </div>
+      <div class="panel" style="grid-column:span 1">
+        <div class="phead"><span class="eyebrow">Kontrol</span><h2>İhale etiği</h2></div>
+        <div class="pbody" style="display:flex;flex-direction:column;gap:9px;font-size:13px">
+          ${chk(b.teklifler.length>=3, `En az 3 geçerli teklif (${b.teklifler.length})`)}
+          ${chk(!!b.agirlikKilit, "Ağırlıklar teklifler öncesi kilitlendi")}
+          ${chk(b.teklifler.every(t=>{const c=mut(t.mid); return c&&c.nda;}) && b.teklifler.length>0, "Tüm teklif verenlerde NDA var")}
+          ${chk(b.teklifler.every(t=>{const c=mut(t.mid); return c&&c.taahhut;}) && b.teklifler.length>0, "Tüm teklif verenlerde devre dışı bırakmama taahhüdü var")}
+          ${chk(ozet(b).gecti, "Arsa payı çoğunluğu sağlandı")}
+        </div>
+      </div>
+    </div>
+    <div class="panel" style="margin-top:16px">
+      <div class="phead"><span class="eyebrow">${b.teklifler.length} teklif</span><h2>Karşılaştırma matrisi</h2></div>
+      <div class="pbody flush"><div class="tw"><table>
+        <thead><tr><th class="num">#</th><th>Yüklenici</th><th class="num">Malik payı</th><th class="num">Kira yardımı</th><th class="num">Nakdi</th><th class="num">Süre</th><th class="num">Teminat</th><th class="num">Teknik</th><th class="num">Puan</th><th></th></tr></thead>
+        <tbody>${rows||`<tr><td colspan="10"><div class="empty"><h3>Teklif yok</h3><p>Kapalı zarfları açtıktan sonra her teklifi buraya gir; matris ağırlıklara göre otomatik sıralanır.</p><button class="btn pri" data-act="tek-yeni" data-id="${b.id}">+ Teklif ekle</button></div></td></tr>`}</tbody>
+      </table></div></div>
+    </div>`;
+}
+function chk(ok, txt){
+  return `<div style="display:flex;gap:9px;align-items:flex-start">
+    <span style="flex:none;width:17px;height:17px;border-radius:4px;display:grid;place-items:center;font-size:11px;font-weight:700;background:${ok?"var(--ok-soft)":"var(--surface-3)"};color:${ok?"var(--ok)":"var(--faint)"}">${ok?"✓":"—"}</span>
+    <span style="color:${ok?"var(--text)":"var(--muted)"}">${txt}</span></div>`;
+}
+
+function vYedek(){
+  const cnt = S.binalar.reduce((a,b)=>a+b.malikler.length,0);
+  return `<div class="head"><div><h1>Yedek ve Veri</h1>
+    <div class="sub">Veri bulutta panelin kendi sürümünde tutuluyor; ekipteki herkes aynı kaydı görür. Yine de düzenli olarak JSON yedeği indir.</div></div></div>
+    <div class="panel"><div class="phead"><h2>Yedekleme</h2></div><div class="pbody" style="display:flex;flex-direction:column;gap:14px">
+      <div class="grid3">
+        <div class="stat"><span class="k">Bina</span><span class="v">${S.binalar.length}</span></div>
+        <div class="stat"><span class="k">Malik kaydı</span><span class="v">${cnt}</span></div>
+        <div class="stat"><span class="k">Müteahhit</span><span class="v">${S.muteahhitler.length}</span></div>
+      </div>
+      <div style="display:flex;gap:9px;flex-wrap:wrap">
+        <button class="btn pri" data-act="yedek-indir">⤓ JSON yedek indir</button>
+        <button class="btn" data-act="yedek-yukle">⤒ JSON'dan geri yükle</button>
+        ${S.seed?`<button class="btn danger" data-act="ornek-sil">Örnek verileri sil</button>`:""}
+      </div>
+    </div></div>
+    <div class="panel"><div class="phead"><h2>Kişisel veri (KVKK)</h2></div><div class="pbody" style="color:var(--muted);font-size:13px;display:flex;flex-direction:column;gap:8px">
+      <p style="margin:0">Bu panelde malik ad-soyad, telefon ve tapu bilgisi işleniyor — hepsi kişisel veri. Üç pratik kural:</p>
+      <ul style="margin:0;padding-left:18px;display:flex;flex-direction:column;gap:5px">
+        <li><b>Veri minimizasyonu:</b> işin için gerekmeyen alanı hiç toplama. TC kimlik numarası, tapu fotokopisi gibi verileri bu panele girme.</li>
+        <li><b>Aydınlatma:</b> ilk görüşmede maliklere aydınlatma metni imzalat; münhasır yetki sözleşmesinin eki olsun.</li>
+        <li><b>Erişim:</b> panel bağlantısını yalnız ekipteki kişilerle paylaş; işten ayrılan kişinin erişimini kaldır.</li>
+      </ul>
+    </div></div>`;
+}
+
+/* ============ render ============ */
+function render(){
+  document.querySelectorAll(".navbtn[data-tab]").forEach(el=>{
+    const t = el.dataset.tab;
+    el.setAttribute("aria-current", String(t === V.tab || (V.tab==="bina" && t==="panel")));
+  });
+  $("#c-bina").textContent = S.binalar.length || "";
+  $("#c-mut").textContent = S.muteahhitler.length || "";
+  $("#c-tek").textContent = S.binalar.reduce((a,b)=>a+b.teklifler.length,0) || "";
+  const v = $("#view");
+  v.innerHTML = ({panel:vPanel, bina:vBina, fizibilite:vFizibilite, muteahhit:vMuteahhit, teklif:vTeklif, yedek:vYedek}[V.tab] || vPanel)()
+    + `<div class="foot">Çoğunluk hesabı <b>arsa payı</b> üzerinden yapılır (6306 s. Kanun, salt çoğunluk). Bu panel bir takip aracıdır; hukuki dayanak için güncel mevzuatı ve tapu kayıtlarını esas al.</div>`;
+  window.scrollTo({top:0});
+}
+
+/* ============ form altyapısı ============ */
+let formSubmit = null;
+function openForm(title, fields, values, onSubmit, submitLabel){
+  $("#mtitle").textContent = title;
+  $("#msubmit").textContent = submitLabel || "Kaydet";
+  $("#mbody").innerHTML = fields.map(f=>{
+    const v = values[f.k] ?? f.def ?? "";
+    const cls = "field" + (f.full ? " full" : "");
+    let ctl;
+    if(f.type === "select"){
+      ctl = `<select name="${f.k}">${f.options.map(([ov,oa])=>`<option value="${esc(ov)}" ${String(ov)===String(v)?"selected":""}>${esc(oa)}</option>`).join("")}</select>`;
+    } else if(f.type === "textarea"){
+      ctl = `<textarea name="${f.k}">${esc(v)}</textarea>`;
+    } else if(f.type === "checks"){
+      ctl = `<div style="display:flex;flex-wrap:wrap;gap:9px;padding-top:2px">${f.options.map(([ov,oa])=>
+        `<label style="display:inline-flex;align-items:center;gap:5px;font-size:12.5px;text-transform:none;letter-spacing:0;color:var(--text);font-weight:400">
+          <input type="checkbox" name="${f.k}" value="${esc(ov)}" ${(Array.isArray(v)&&v.includes(ov))?"checked":""} style="width:auto">${esc(oa)}</label>`).join("")}</div>`;
+    } else if(f.type === "bool"){
+      ctl = `<label style="display:inline-flex;align-items:center;gap:7px;font-size:13px;text-transform:none;letter-spacing:0;color:var(--text);font-weight:400;padding-top:2px">
+        <input type="checkbox" name="${f.k}" ${v?"checked":""} style="width:auto">${esc(f.boolLabel||"Evet")}</label>`;
+    } else {
+      ctl = `<input type="${f.type||"text"}" name="${f.k}" value="${esc(v)}" ${f.step?`step="${f.step}"`:""} ${f.required?"required":""} ${f.placeholder?`placeholder="${esc(f.placeholder)}"`:""}>`;
+    }
+    return `<div class="${cls}"><label>${esc(f.label)}</label>${ctl}${f.hint?`<span class="hint">${f.hint}</span>`:""}</div>`;
+  }).join("");
+  formSubmit = onSubmit;
+  $("#modal").showModal();
+}
+$("#mform").addEventListener("submit", e => {
+  const fd = new FormData(e.target), out = {};
+  for(const [k,v] of fd.entries()){
+    if(k in out){ out[k] = Array.isArray(out[k]) ? [...out[k], v] : [out[k], v]; }
+    else out[k] = v;
+  }
+  e.target.querySelectorAll('input[type=checkbox]').forEach(cb=>{
+    if(cb.value === "on"){ out[cb.name] = cb.checked; }
+    else if(!(cb.name in out)) out[cb.name] = [];
+    else if(!Array.isArray(out[cb.name])) out[cb.name] = [out[cb.name]];
+  });
+  if(formSubmit) formSubmit(out);
+  formSubmit = null;
+});
+$("#modal").addEventListener("close", ()=>{ formSubmit = null; });
+
+function commit(){ queueSave(); render(); }
+
+/* ============ formlar ============ */
+const F_BINA = [
+  {k:"ad",label:"Bina adı / kısa isim",required:true,full:true,placeholder:"ör. Bahariye Apartmanı"},
+  {k:"il",label:"İl",def:"İstanbul"},{k:"ilce",label:"İlçe"},
+  {k:"mahalle",label:"Mahalle"},{k:"adres",label:"Adres",},
+  {k:"ada",label:"Ada"},{k:"parsel",label:"Parsel"},
+  {k:"arsaM2",label:"Arsa alanı (m²)",type:"number",step:"0.01"},
+  {k:"emsal",label:"Emsal / KAKS",type:"number",step:"0.01"},
+  {k:"taks",label:"TAKS",type:"number",step:"0.01"},
+  {k:"mevcutKat",label:"Mevcut kat sayısı",type:"number"},
+  {k:"payda",label:"Toplam arsa payı (payda)",type:"number",required:true,def:1000,hint:"Tapudaki ortak payda — ör. 1000. Çoğunluk bunun yarısıdır."},
+  {k:"riskli",label:"Riskli yapı statüsü",type:"select",options:RISKLI},
+  {k:"asama",label:"Aşama",type:"select",options:ASAMALAR},
+  {k:"notlar",label:"Notlar",type:"textarea",full:true},
+];
+const F_MALIK = [
+  {k:"ad",label:"Malik adı",required:true,full:true},
+  {k:"bb",label:"Bağımsız bölüm no",required:true},{k:"kat",label:"Kat"},
+  {k:"pay",label:"Arsa payı",type:"number",step:"0.01",required:true,hint:"Paydaya göre pay (ör. 84)"},
+  {k:"durum",label:"Tavır",type:"select",options:DURUMLAR},
+  {k:"tel",label:"Telefon"},
+  {k:"kiraci",label:"Kiracı var mı",type:"bool",boolLabel:"Kiracı oturuyor"},
+  {k:"engel",label:"Hukuki engel",type:"checks",options:ENGELLER,full:true},
+  {k:"not",label:"Not / son görüşme",type:"textarea",full:true},
+];
+const F_MUT = [
+  {k:"unvan",label:"Ünvan",required:true,full:true},
+  {k:"yetkili",label:"Yetkili kişi"},{k:"tel",label:"Telefon"},
+  {k:"email",label:"E-posta",type:"email"},{k:"vergiNo",label:"Vergi no"},
+  {k:"ymbn",label:"YMBN grubu",type:"select",options:YMBN.map(g=>[g,"Grup "+g]),hint:"Grup, üstlenebileceği iş büyüklüğünü sınırlar."},
+  {k:"durum",label:"Durum",type:"select",options:[["aktif","Aktif"],["degerlendirmede","Değerlendirmede"],["kara","Kara liste"]]},
+  {k:"referans",label:"Referans projeler",full:true},
+  {k:"nda",label:"Gizlilik sözleşmesi",type:"bool",boolLabel:"NDA imzalandı"},
+  {k:"taahhut",label:"Devre dışı bırakmama",type:"bool",boolLabel:"Taahhütname imzalandı"},
+  {k:"ndaTarih",label:"İfşa / imza tarihi",type:"date",hint:"24 aylık kuyruk süresi bu tarihten işler."},
+  {k:"not",label:"Not",type:"textarea",full:true},
+];
+function fTeklif(){ return [
+  {k:"mid",label:"Yüklenici",type:"select",options:S.muteahhitler.map(c=>[c.id,c.unvan]),full:true,required:true},
+  {k:"malikPayi",label:"Maliklere verilen pay (%)",type:"number",step:"0.1",required:true},
+  {k:"sureAy",label:"Teslim süresi (ay)",type:"number"},
+  {k:"kiraAy",label:"Kira yardımı (ay)",type:"number"},
+  {k:"kiraTutar",label:"Aylık kira yardımı (TL)",type:"number"},
+  {k:"nakdi",label:"Nakdi destek / peşinat (TL)",type:"number"},
+  {k:"teminat",label:"Teminat mektubu (TL)",type:"number"},
+  {k:"teknik",label:"Teknik & referans puanı",type:"number",def:70,hint:"0–100 arası kendi değerlendirmen"},
+  {k:"tarih",label:"Teklif tarihi",type:"date"},
+  {k:"not",label:"Not",type:"textarea",full:true},
+];}
+
+/* ============ eylemler ============ */
+document.addEventListener("click", e => {
+  const el = e.target.closest("[data-act]"); if(!el) return;
+  const a = el.dataset.act;
+  const b = () => bina(el.dataset.b || el.dataset.id);
+
+  if(a==="tab"){ V.tab = el.dataset.tab; V.binaId = null; render(); return; }
+  if(a==="mclose"){ $("#modal").close(); return; }
+  if(a==="theme"){
+    const cur = document.documentElement.getAttribute("data-theme");
+    const sysDark = matchMedia("(prefers-color-scheme: dark)").matches;
+    document.documentElement.setAttribute("data-theme", cur ? (cur==="dark"?"light":"dark") : (sysDark?"light":"dark"));
+    return;
+  }
+  if(a==="bina-ac"){ V.tab="bina"; V.binaId=el.dataset.id; render(); return; }
+
+  if(a==="bina-yeni"){
+    openForm("Yeni bina", F_BINA, {riskli:"yok",asama:"tespit",payda:1000,il:"İstanbul"}, o=>{
+      S.binalar.push({id:uid(),...o, arsaM2:n(o.arsaM2),emsal:n(o.emsal),taks:n(o.taks),payda:n(o.payda)||1000,
+        malikler:[],teklifler:[],agirliklar:{malikPayi:35,kira:10,nakdi:10,sure:15,teminat:15,teknik:15},agirlikKilit:""});
+      commit();
+    }, "Bina ekle"); return;
+  }
+  if(a==="bina-duzenle"){
+    const x = b(); if(!x) return;
+    openForm("Bina bilgileri", F_BINA, x, o=>{
+      Object.assign(x, o, {arsaM2:n(o.arsaM2),emsal:n(o.emsal),taks:n(o.taks),payda:n(o.payda)||1000});
+      commit();
+    }); return;
+  }
+  if(a==="asama"){
+    const x = b(); if(!x) return;
+    openForm("Aşama değiştir", [{k:"asama",label:"Aşama",type:"select",options:ASAMALAR,full:true}], x, o=>{ x.asama=o.asama; commit(); }); return;
+  }
+  if(a==="malik-yeni"){
+    const x = b(); if(!x) return;
+    openForm("Yeni malik", F_MALIK, {durum:"ulasilamadi",engel:[]}, o=>{
+      x.malikler.push({id:uid(),...o,pay:n(o.pay),engel:[].concat(o.engel||[]),gor:[],son:""});
+      commit();
+    }, "Malik ekle"); return;
+  }
+  if(a==="malik-duzenle"){
+    const x = b(); const m = x && x.malikler.find(z=>z.id===el.dataset.m); if(!m) return;
+    openForm("Malik düzenle", F_MALIK, m, o=>{ Object.assign(m, o, {pay:n(o.pay), engel:[].concat(o.engel||[])}); commit(); }); return;
+  }
+  if(a==="malik-sil"){
+    const x = b(); const m = x && x.malikler.find(z=>z.id===el.dataset.m); if(!m) return;
+    if(confirm(`"${m.ad}" kaydı silinsin mi?`)){ x.malikler = x.malikler.filter(z=>z.id!==m.id); commit(); } return;
+  }
+  if(a==="malik-toplu"){
+    const x = b(); if(!x) return;
+    openForm("Toplu daire oluştur", [
+      {k:"adet",label:"Bağımsız bölüm sayısı",type:"number",required:true,def:12,full:true},
+      {k:"esit",label:"Arsa payı",type:"bool",boolLabel:"Paydayı eşit böl",full:true,hint:"Sonra tek tek düzeltebilirsin."},
+    ], {esit:true}, o=>{
+      const adet = Math.max(1, Math.min(200, parseInt(o.adet)||0));
+      const p = o.esit ? Math.round(payda(x)/adet*100)/100 : 0;
+      for(let i=1;i<=adet;i++){
+        x.malikler.push({id:uid(),ad:`D.${i} maliki`,bb:String(i),kat:"",pay:p,durum:"ulasilamadi",engel:[],kiraci:false,tel:"",not:"",son:"",gor:[]});
+      }
+      commit();
+    }, "Oluştur"); return;
+  }
+  if(a==="durum"){
+    const x = bina(el.dataset.b); const m = x && x.malikler.find(z=>z.id===el.dataset.m); if(!m) return;
+    m.durum = el.dataset.v; m.son = new Date().toISOString().slice(0,10); commit(); return;
+  }
+  if(a==="malik-csv"){
+    const x = b(); if(!x) return;
+    const head = ["BB","Malik","Kat","Arsa payı","Tavır","Hukuki engel","Telefon","Not"];
+    const rows = x.malikler.map(m=>[m.bb,m.ad,m.kat,m.pay,DURUM_AD[m.durum],(m.engel||[]).map(z=>ENGEL_AD[z]).join(" / "),m.tel,m.not]);
+    const csv = "﻿" + [head,...rows].map(r=>r.map(c=>`"${String(c??"").replace(/"/g,'""')}"`).join(";")).join("\r\n");
+    dl(`${x.ad.replace(/[^\wğüşıöçĞÜŞİÖÇ -]/g,"")}-malikler.csv`, csv, "text/csv"); return;
+  }
+  if(a==="mut-yeni"){
+    openForm("Yeni müteahhit", F_MUT, {ymbn:"B",durum:"degerlendirmede"}, o=>{
+      S.muteahhitler.push({id:uid(),...o}); commit();
+    }, "Ekle"); return;
+  }
+  if(a==="mut-duzenle"){
+    const c = mut(el.dataset.id); if(!c) return;
+    openForm("Müteahhit düzenle", F_MUT, c, o=>{ Object.assign(c,o); commit(); }); return;
+  }
+  if(a==="mut-sil"){
+    const c = mut(el.dataset.id); if(!c) return;
+    const kul = S.binalar.some(x=>x.teklifler.some(t=>t.mid===c.id));
+    if(kul){ alert("Bu yüklenicinin teklifi var. Önce tekliflerini sil."); return; }
+    if(confirm(`"${c.unvan}" silinsin mi?`)){ S.muteahhitler = S.muteahhitler.filter(z=>z.id!==c.id); commit(); } return;
+  }
+  if(a==="tek-yeni"){
+    const x = b(); if(!x) return;
+    if(!S.muteahhitler.length){ alert("Önce müteahhit havuzuna yüklenici ekle."); return; }
+    openForm("Yeni teklif", fTeklif(), {teknik:70,tarih:new Date().toISOString().slice(0,10)}, o=>{
+      x.teklifler.push({id:uid(),...o,malikPayi:n(o.malikPayi),kiraAy:n(o.kiraAy),kiraTutar:n(o.kiraTutar),
+        nakdi:n(o.nakdi),sureAy:n(o.sureAy),teminat:n(o.teminat),teknik:n(o.teknik)});
+      commit();
+    }, "Teklif ekle"); return;
+  }
+  if(a==="tek-duzenle"){
+    const x = bina(el.dataset.b); const t = x && x.teklifler.find(z=>z.id===el.dataset.t); if(!t) return;
+    openForm("Teklif düzenle", fTeklif(), t, o=>{
+      Object.assign(t,o,{malikPayi:n(o.malikPayi),kiraAy:n(o.kiraAy),kiraTutar:n(o.kiraTutar),
+        nakdi:n(o.nakdi),sureAy:n(o.sureAy),teminat:n(o.teminat),teknik:n(o.teknik)});
+      commit();
+    }); return;
+  }
+  if(a==="tek-sil"){
+    const x = bina(el.dataset.b); if(!x) return;
+    if(confirm("Teklif silinsin mi?")){ x.teklifler = x.teklifler.filter(z=>z.id!==el.dataset.t); commit(); } return;
+  }
+  if(a==="agirlik-kilit"){
+    const x = b(); if(!x) return;
+    x.agirlikKilit = new Date().toISOString().slice(0,10); commit(); return;
+  }
+  if(a==="agirlik-ac"){
+    const x = b(); if(!x) return;
+    if(confirm("Ağırlık kilidini açmak, puanlamanın teklifler görüldükten sonra değiştirilebildiği anlamına gelir. Devam edilsin mi?")){
+      x.agirlikKilit = ""; commit();
+    } return;
+  }
+  if(a==="yedek-indir"){
+    dl(`kentsel-rota-yedek-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(S,null,2), "application/json"); return;
+  }
+  if(a==="yedek-yukle"){
+    openForm("JSON'dan geri yükle", [{k:"json",label:"Yedek içeriği",type:"textarea",full:true,required:true,hint:"İndirdiğin JSON dosyasının içeriğini buraya yapıştır. Mevcut veri değiştirilir."}], {}, o=>{
+      try{
+        const j = JSON.parse(o.json);
+        if(!j || !Array.isArray(j.binalar)) throw new Error("geçersiz");
+        S = j; commit();
+      }catch(_){ alert("JSON okunamadı. Dosya içeriğini olduğu gibi yapıştırdığından emin ol."); }
+    }, "Geri yükle"); return;
+  }
+  if(a==="ornek-sil"){
+    if(confirm("Örnek bina ve müteahhit kayıtları silinsin mi?")){
+      S = {v:1, seed:false, binalar:[], muteahhitler:[]}; V.tab="panel"; V.binaId=null; commit();
+    } return;
+  }
+});
+document.addEventListener("change", e => {
+  const el = e.target.closest("[data-act]"); if(!el) return;
+  if(el.dataset.act === "tek-bina"){ V.tekBina = el.value; render(); return; }
+  if(el.dataset.act === "agirlik"){
+    const x = bina(el.dataset.b); if(!x) return;
+    x.agirliklar[el.dataset.k] = Math.max(0, n(el.value));
+    queueSave();
+    const cur = document.activeElement && document.activeElement.id;
+    render();
+    if(cur){ const nx = document.getElementById(cur); if(nx) nx.focus(); }
+    return;
+  }
+});
+
+async function dl(filename, data, type){
+  const d = await window.claude?.use?.("downloads");
+  if(d){
+    try{ await d.save({filename, data: new Blob([data], {type})}); return; }catch(_){}
+  }
+  try{
+    const url = URL.createObjectURL(new Blob([data], {type}));
+    const a = document.createElement("a"); a.href = url; a.download = filename; a.click();
+    setTimeout(()=>URL.revokeObjectURL(url), 1500);
+  }catch(_){ alert("Dosya indirilemedi."); }
+}
+
+window.addEventListener("beforeunload", e => { if(dirty){ e.preventDefault(); e.returnValue = ""; } });
+
+/* ============ başlat ============ */
+(async ()=>{
+  S = await loadState();
+  S.binalar.forEach(b=>{
+    b.malikler = b.malikler||[]; b.teklifler = b.teklifler||[];
+    b.agirliklar = b.agirliklar||{malikPayi:35,kira:10,nakdi:10,sure:15,teminat:15,teknik:15};
+  });
+  S.muteahhitler = S.muteahhitler||[];
+  render();
+  const art = await window.claude?.use?.("artifact");
+  setSave(art ? "" : "err", art ? "Hazır" : "Kayıt yok — önizleme");
+})();
+</script>
