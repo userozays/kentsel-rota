@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IconEdit, IconExternalLink, IconFilter, IconMail, IconPhone, IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconDownload,
+  IconEdit, IconExternalLink, IconFilter, IconMail, IconPhone, IconPlus, IconSearch } from "@tabler/icons-react";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
 import { MUTEAHHIT_DURUMLARI, MUTEAHHIT_DURUMU, yazabilir } from "@/lib/sabitler";
 import { sayi } from "@/lib/yardimcilar";
+import { aramaKelimeleri } from "@/lib/arama";
 import { Avatar, BosDurum, IstatistikKart, Rozet, SayfaBasligi, YildizPuan } from "@/components/ortak";
 import { MuteahhitModali } from "./muteahhit-modali";
 
@@ -21,16 +23,8 @@ export default async function MuteahhitlerSayfasi({
   const p = await searchParams;
 
   const kosullar: Prisma.MuteahhitWhereInput[] = [];
-  if (p.q) {
-    kosullar.push({
-      OR: [
-        { firmaAdi: { contains: p.q } },
-        { yetkiliKisi: { contains: p.q } },
-        { kod: { contains: p.q } },
-        { calismaBolgeleri: { contains: p.q } },
-        { telefon: { contains: p.q } },
-      ],
-    });
+  for (const kelime of aramaKelimeleri(p.q)) {
+    kosullar.push({ aramaMetni: { contains: kelime } });
   }
   if (p.durum) kosullar.push({ durum: p.durum });
   if (p.puan) kosullar.push({ puan: { gte: Number(p.puan) } });
@@ -53,6 +47,16 @@ export default async function MuteahhitlerSayfasi({
   const duzenlenecek =
     modalAcik && p.duzenle ? await db.muteahhit.findUnique({ where: { id: p.duzenle } }) : null;
 
+  /** Ekrandaki filtreleri koruyarak CSV bağlantısı üretir */
+  const disaAktarYolu = () => {
+    const q = new URLSearchParams();
+    for (const [ad, deger] of Object.entries(p)) {
+      if (deger && !["yeni", "duzenle", "sayfa"].includes(ad)) q.set(ad, deger);
+    }
+    const s = q.toString();
+    return s ? "/muteahhitler/disa-aktar?" + s : "/muteahhitler/disa-aktar";
+  };
+
   const modalYolu = (ek: Record<string, string>) => {
     const q = new URLSearchParams();
     for (const [ad, deger] of Object.entries(p)) {
@@ -70,10 +74,16 @@ export default async function MuteahhitlerSayfasi({
         aciklama={`${sayi(muteahhitler.length)} firma listeleniyor`}
         aksiyonlar={
           duzenlenebilir ? (
+            <>
+            <a href={disaAktarYolu()} className="btn">
+              <IconDownload size={18} stroke={1.5} className="me-1" />
+              Dışa Aktar
+            </a>
             <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
               <IconPlus size={18} stroke={1.5} className="me-1" />
               Yeni Müteahhit
             </Link>
+            </>
           ) : null
         }
       />

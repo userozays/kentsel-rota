@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
 import { yazabilir } from "@/lib/sabitler";
 import { bosaNull, sayiyaCevir, formDegerleri } from "@/lib/yardimcilar";
+import { muteahhitAramaMetni } from "@/lib/arama";
 
 export type FormDurumu = { hata?: string; basarili?: boolean; kayitId?: string; degerler?: Record<string, string> };
 
@@ -42,8 +43,16 @@ export async function muteahhitKaydet(_onceki: FormDurumu, form: FormData): Prom
   };
 
   const kayit = id
-    ? await db.muteahhit.update({ where: { id }, data: veri })
-    : await db.muteahhit.create({ data: { ...veri, kod: await sonrakiKod() } });
+    ? await db.muteahhit.update({
+        where: { id },
+        data: { ...veri, aramaMetni: muteahhitAramaMetni({ ...veri, kod: (await db.muteahhit.findUnique({ where: { id }, select: { kod: true } }))?.kod }) },
+      })
+    : await (async () => {
+        const kod = await sonrakiKod();
+        return db.muteahhit.create({
+          data: { ...veri, kod, aramaMetni: muteahhitAramaMetni({ ...veri, kod }) },
+        });
+      })();
 
   revalidatePath("/muteahhitler");
   revalidatePath(`/muteahhitler/${kayit.id}`);

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IconEdit, IconFilter, IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconDownload,
+  IconEdit, IconFilter, IconPlus, IconSearch } from "@tabler/icons-react";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
@@ -16,6 +17,7 @@ import {
   yazabilir,
 } from "@/lib/sabitler";
 import { onayOzeti, sayi, tarih, yuzde } from "@/lib/yardimcilar";
+import { aramaKelimeleri } from "@/lib/arama";
 import { BosDurum, Rozet, SayfaBasligi } from "@/components/ortak";
 import { Sayfalama } from "@/components/sayfalama";
 import { BinaModali } from "./bina-modali";
@@ -35,18 +37,9 @@ export default async function BinalarSayfasi({
   const sayfa = Math.max(1, Number(p.sayfa) || 1);
 
   const kosullar: Prisma.BinaWhereInput[] = [];
-  if (p.q) {
-    kosullar.push({
-      OR: [
-        { baslik: { contains: p.q } },
-        { kod: { contains: p.q } },
-        { mahalle: { contains: p.q } },
-        { ilce: { contains: p.q } },
-        { ada: { contains: p.q } },
-        { parsel: { contains: p.q } },
-        { adres: { contains: p.q } },
-      ],
-    });
+  // Aksan ve büyük/küçük harften bağımsız arama: her kelime ayrı koşul olur
+  for (const kelime of aramaKelimeleri(p.q)) {
+    kosullar.push({ aramaMetni: { contains: kelime } });
   }
   if (p.durum) kosullar.push({ durum: p.durum });
   if (p.risk) kosullar.push({ riskDurumu: p.risk });
@@ -94,6 +87,16 @@ export default async function BinalarSayfasi({
     : [null, [], []];
 
   /** Aktif filtreleri koruyarak modal bağlantısı üretir */
+  /** Ekrandaki filtreleri koruyarak CSV bağlantısı üretir */
+  const disaAktarYolu = () => {
+    const q = new URLSearchParams();
+    for (const [ad, deger] of Object.entries(p)) {
+      if (deger && !["yeni", "duzenle", "sayfa"].includes(ad)) q.set(ad, deger);
+    }
+    const s = q.toString();
+    return s ? "/binalar/disa-aktar?" + s : "/binalar/disa-aktar";
+  };
+
   const modalYolu = (ek: Record<string, string>) => {
     const q = new URLSearchParams();
     for (const [ad, deger] of Object.entries(p)) {
@@ -111,10 +114,16 @@ export default async function BinalarSayfasi({
         aciklama={`${sayi(toplam)} dosya listeleniyor`}
         aksiyonlar={
           duzenlenebilir ? (
+            <>
+            <a href={disaAktarYolu()} className="btn">
+              <IconDownload size={18} stroke={1.5} className="me-1" />
+              Dışa Aktar
+            </a>
             <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
               <IconPlus size={18} stroke={1.5} className="me-1" />
               Yeni Bina Dosyası
             </Link>
+            </>
           ) : null
         }
       />

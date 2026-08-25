@@ -11,7 +11,8 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:studio": "prisma studio",
     "kurulum": "prisma db push && tsx prisma/seed.ts",
-    "db:temizle": "tsx prisma/temizle.ts"
+    "db:temizle": "tsx prisma/temizle.ts",
+    "db:arama": "tsx prisma/arama-doldur.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.1.0",
@@ -22,6 +23,7 @@
     "next": "^15.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
+    "server-only": "^0.0.1",
     "zod": "^3.24.1"
   },
   "devDependencies": {

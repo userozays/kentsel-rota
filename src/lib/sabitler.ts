@@ -150,3 +150,45 @@ export const AKTIVITE_TURU = haritaYap(AKTIVITE_TURLERI);
 
 export const etiketBul = (harita: Record<string, Secenek>, deger?: string | null): Secenek =>
   (deger && harita[deger]) || { deger: deger ?? "", etiket: deger ?? "-", renk: "secondary" };
+
+/* ------------------------------------------------------- Randevular / takvim */
+
+export const RANDEVU_TURLERI: Secenek[] = [
+  { deger: "TOPLANTI", etiket: "Malik Toplantısı", renk: "purple" },
+  { deger: "GORUSME", etiket: "Görüşme", renk: "blue" },
+  { deger: "NOTER", etiket: "Noter / İmza", renk: "indigo" },
+  { deger: "TAHLIYE", etiket: "Tahliye", renk: "orange" },
+  { deger: "SAHA", etiket: "Saha Ziyareti", renk: "teal" },
+  { deger: "RESMI", etiket: "Resmî Kurum", renk: "cyan" },
+  { deger: "DIGER", etiket: "Diğer", renk: "secondary" },
+];
+export const RANDEVU_TURU = haritaYap(RANDEVU_TURLERI);
+
+export const RANDEVU_DURUMLARI: Secenek[] = [
+  { deger: "PLANLANDI", etiket: "Planlandı", renk: "blue" },
+  { deger: "TAMAMLANDI", etiket: "Tamamlandı", renk: "green" },
+  { deger: "IPTAL", etiket: "İptal", renk: "secondary" },
+];
+export const RANDEVU_DURUMU = haritaYap(RANDEVU_DURUMLARI);
+
+export const TAKVIM_GORUNUMLERI = [
+  { deger: "ay", etiket: "Ay" },
+  { deger: "hafta", etiket: "Hafta" },
+  { deger: "gun", etiket: "Gün" },
+] as const;
+
+export type TakvimGorunumu = (typeof TAKVIM_GORUNUMLERI)[number]["deger"];
+
+/* ---------------------------------------------------------------- Belgeler */
+
+export const BELGE_KATEGORILERI: Secenek[] = [
+  { deger: "TAPU", etiket: "Tapu / Takyidat", renk: "blue" },
+  { deger: "RISKLI_RAPOR", etiket: "Riskli Yapı Raporu", renk: "red" },
+  { deger: "SOZLESME", etiket: "Sözleşme", renk: "purple" },
+  { deger: "KIMLIK", etiket: "Kimlik / Vekaletname", renk: "azure" },
+  { deger: "TUTANAK", etiket: "Toplantı Tutanağı", renk: "teal" },
+  { deger: "RUHSAT", etiket: "Ruhsat / İzin", renk: "green" },
+  { deger: "PROJE", etiket: "Proje / Çizim", renk: "indigo" },
+  { deger: "DIGER", etiket: "Diğer", renk: "secondary" },
+];
+export const BELGE_KATEGORISI = haritaYap(BELGE_KATEGORILERI);

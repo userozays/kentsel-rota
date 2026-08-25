@@ -177,3 +177,226 @@ dialog.modal.krp-modal[open]::backdrop {
     margin: 0 !important;
   }
 }
+
+/* ------------------------------------------------------------ Global arama */
+
+.krp-doner {
+  animation: krp-don 0.9s linear infinite;
+}
+
+@keyframes krp-don {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .krp-doner {
+    animation: none;
+  }
+}
+
+.krp-arama-paneli {
+  position: absolute;
+  top: calc(100% + 0.375rem);
+  left: 0;
+  right: 0;
+  z-index: 1040;
+  box-shadow: var(--tblr-box-shadow-dropdown, 0 1rem 3rem rgba(0, 0, 0, 0.175));
+  overflow: hidden;
+}
+
+.krp-arama-liste {
+  max-height: min(28rem, 70vh);
+  overflow-y: auto;
+}
+
+.krp-arama-baslik {
+  padding: 0.5rem 0.875rem 0.25rem;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--tblr-secondary);
+  background: var(--tblr-bg-surface-tertiary);
+  border-top: 1px solid var(--tblr-border-color);
+}
+
+.krp-arama-baslik:first-child {
+  border-top: 0;
+}
+
+.krp-arama-satir {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  width: 100%;
+  padding: 0.5rem 0.875rem;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.krp-arama-satir.secili {
+  background: var(--tblr-bg-surface-secondary);
+}
+
+.krp-arama-alt {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  padding: 0.5rem 0.875rem;
+  border-top: 1px solid var(--tblr-border-color);
+  background: var(--tblr-bg-surface-tertiary);
+}
+
+.krp-arama-alt kbd {
+  font-size: 0.7rem;
+}
+
+/* ------------------------------------------------------------------- Takvim */
+
+.krp-takvim {
+  table-layout: fixed;
+}
+
+.krp-takvim th {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+
+.krp-gun {
+  height: 7.5rem;
+  vertical-align: top;
+  padding: 0.375rem !important;
+}
+
+.krp-gun-solgun {
+  background: var(--tblr-bg-surface-tertiary);
+}
+
+.krp-gun-solgun .krp-olay {
+  opacity: 0.65;
+}
+
+.krp-bugun {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 1.5rem;
+  height: 1.5rem;
+  padding: 0 0.375rem;
+  border-radius: 999px;
+  background: var(--tblr-primary);
+  color: #fff;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
+.krp-gun-ekle {
+  opacity: 0;
+  width: 1.25rem;
+  height: 1.25rem;
+  line-height: 1.1rem;
+  text-align: center;
+  border-radius: var(--tblr-border-radius);
+  color: var(--tblr-secondary);
+  text-decoration: none;
+  transition: opacity 0.12s;
+}
+
+.krp-gun:hover .krp-gun-ekle,
+.krp-gun-ekle:focus-visible {
+  opacity: 1;
+  background: var(--tblr-bg-surface-secondary);
+}
+
+.krp-olay {
+  display: flex;
+  align-items: center;
+  gap: 0.3125rem;
+  padding: 0.1875rem 0.375rem;
+  margin-bottom: 0.1875rem;
+  border-radius: var(--tblr-border-radius);
+  background: var(--tblr-bg-surface-secondary);
+  color: inherit;
+  text-decoration: none;
+  font-size: 0.8125rem;
+  line-height: 1.3;
+  min-width: 0;
+}
+
+a.krp-olay:hover {
+  background: var(--tblr-bg-surface-tertiary);
+}
+
+.krp-olay-kompakt {
+  font-size: 0.75rem;
+  padding: 0.125rem 0.3125rem;
+}
+
+.krp-olay-iptal {
+  text-decoration: line-through;
+  opacity: 0.6;
+}
+
+.krp-olay-saat {
+  flex-shrink: 0;
+  font-variant-numeric: tabular-nums;
+  color: var(--tblr-secondary);
+}
+
+.krp-olay-nokta {
+  flex-shrink: 0;
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 999px;
+  display: inline-block;
+}
+
+.krp-hafta-sutun {
+  flex: 1 1 0;
+  min-width: 0;
+  border-right: 1px solid var(--tblr-border-color);
+}
+
+.krp-hafta-sutun:last-child {
+  border-right: 0;
+}
+
+.krp-hafta-baslik {
+  padding: 0.5rem;
+  text-align: center;
+  border-bottom: 1px solid var(--tblr-border-color);
+  background: var(--tblr-bg-surface-tertiary);
+}
+
+.krp-hafta-bugun {
+  background: var(--tblr-primary-lt);
+}
+
+/* Yazdırma: malik onay çizelgesi kâğıda düzgün insin */
+@media print {
+  .card {
+    break-inside: avoid;
+    border: 1px solid #dee2e6 !important;
+    box-shadow: none !important;
+  }
+  .btn-list,
+  .card-actions,
+  .krp-arama-paneli,
+  dialog.krp-modal {
+    display: none !important;
+  }
+  .table-responsive {
+    overflow: visible !important;
+  }
+  a[href]::after {
+    content: "";
+  }
+}

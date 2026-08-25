@@ -6,6 +6,7 @@ import {
   IconCheck,
   IconCircleCheck,
   IconClock,
+  IconDownload,
   IconEdit,
   IconMail,
   IconMapPin,
@@ -42,6 +43,8 @@ import {
 import { binaSil } from "../eylemler";
 import { BinaModali } from "../bina-modali";
 import { SilOnayi } from "@/components/modal";
+import { BelgelerKarti } from "@/components/belgeler-karti";
+import { belgeleriGetir } from "@/lib/belge-listesi";
 import {
   AdimDegistirici,
   AktiviteFormu,
@@ -100,6 +103,7 @@ export default async function BinaDetaySayfasi({
   if (!bina) notFound();
 
   const duzenlenebilir = yazabilir(oturum.rol);
+  const belgeler = await belgeleriGetir({ binaId: bina.id }, oturum);
   const ozet = onayOzeti(bina.hisseler);
   const ilerleme = asamaYuzdesi(bina.asama);
 
@@ -141,6 +145,10 @@ export default async function BinaDetaySayfasi({
         aksiyonlar={
           duzenlenebilir ? (
             <>
+              <a href={`/binalar/${bina.id}/cizelge`} className="btn">
+                <IconDownload size={18} stroke={1.5} className="me-1" />
+                Onay Çizelgesi
+              </a>
               <Link href={`/binalar/${bina.id}?duzenle=${bina.id}`} scroll={false} className="btn btn-primary">
                 <IconEdit size={18} stroke={1.5} className="me-1" />
                 Düzenle
@@ -466,6 +474,10 @@ export default async function BinaDetaySayfasi({
                     />
                   )}
                 </div>
+              </div>
+
+              <div className="mb-3">
+                <BelgelerKarti belgeler={belgeler} binaId={bina.id} duzenlenebilir={duzenlenebilir} />
               </div>
 
               {/* ---------------------------------------------- Aktiviteler */}

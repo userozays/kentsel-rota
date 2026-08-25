@@ -6,6 +6,8 @@ import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
 import { SUREC_SIRASI, yazabilir } from "@/lib/sabitler";
 import { bosaNull, sayiyaCevir, tariheCevir, formDegerleri } from "@/lib/yardimcilar";
+import { binaAramaMetni, malikAramaMetni } from "@/lib/arama";
+import { canliYayinla } from "@/lib/canli";
 
 export type FormDurumu = { hata?: string; basarili?: boolean; kayitId?: string; degerler?: Record<string, string> };
 
@@ -61,8 +63,11 @@ export async function binaKaydet(_onceki: FormDurumu, form: FormData): Promise<F
   let binaId: string;
 
   if (id) {
-    const eski = await db.bina.findUnique({ where: { id }, select: { asama: true } });
-    await db.bina.update({ where: { id }, data: veri });
+    const eski = await db.bina.findUnique({ where: { id }, select: { asama: true, kod: true } });
+    await db.bina.update({
+      where: { id },
+      data: { ...veri, aramaMetni: binaAramaMetni({ ...veri, kod: eski?.kod }) },
+    });
     binaId = id;
 
     if (eski && eski.asama !== veri.asama) {
@@ -78,8 +83,9 @@ export async function binaKaydet(_onceki: FormDurumu, form: FormData): Promise<F
       });
     }
   } else {
+    const yeniKod = await sonrakiKod();
     const yeni = await db.bina.create({
-      data: { ...veri, kod: await sonrakiKod() },
+      data: { ...veri, kod: yeniKod, aramaMetni: binaAramaMetni({ ...veri, kod: yeniKod }) },
     });
     binaId = yeni.id;
 
@@ -105,7 +111,8 @@ export async function binaKaydet(_onceki: FormDurumu, form: FormData): Promise<F
 
   revalidatePath("/binalar");
   revalidatePath(`/binalar/${binaId}`);
-  revalidatePath("/surec");
+  revalidatePath("/takvim");
+  canliYayinla("bina");
   revalidatePath("/");
   return { basarili: true, kayitId: binaId };
 }
@@ -182,7 +189,8 @@ export async function surecAdimiGuncelle(form: FormData) {
   });
 
   revalidatePath(`/binalar/${adim.binaId}`);
-  revalidatePath("/surec");
+  revalidatePath("/takvim");
+  canliYayinla("bina");
   revalidatePath("/");
 }
 
@@ -241,15 +249,16 @@ export async function malikEkle(_onceki: FormDurumu, form: FormData): Promise<Fo
 
   let malikId = mevcutMalikId;
   if (!malikId) {
+    const malikVerisi = {
+      adSoyad: adSoyad!,
+      tip: String(form.get("tip") ?? "GERCEK"),
+      tcKimlik: bosaNull(form.get("tcKimlik")),
+      telefon: bosaNull(form.get("telefon")),
+      email: bosaNull(form.get("email")),
+      adres: bosaNull(form.get("adres")),
+    };
     const yeni = await db.malik.create({
-      data: {
-        adSoyad: adSoyad!,
-        tip: String(form.get("tip") ?? "GERCEK"),
-        tcKimlik: bosaNull(form.get("tcKimlik")),
-        telefon: bosaNull(form.get("telefon")),
-        email: bosaNull(form.get("email")),
-        adres: bosaNull(form.get("adres")),
-      },
+      data: { ...malikVerisi, aramaMetni: malikAramaMetni(malikVerisi) },
     });
     malikId = yeni.id;
   }

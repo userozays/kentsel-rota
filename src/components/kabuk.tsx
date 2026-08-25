@@ -6,7 +6,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   IconBriefcase,
   IconBuildingCommunity,
-  IconChecklist,
+  IconCalendarEvent,
   IconHistory,
   IconLayoutDashboard,
   IconLogout,
@@ -19,6 +19,7 @@ import {
 } from "@tabler/icons-react";
 import { basHarfler, avatarRengi } from "@/lib/yardimcilar";
 import { ROL } from "@/lib/sabitler";
+import { GlobalArama } from "./global-arama";
 
 type Oturum = { id: string; ad: string; email: string; rol: string };
 
@@ -27,7 +28,7 @@ const MENU = [
   { yol: "/binalar", etiket: "Binalar", ikon: IconBuildingCommunity },
   { yol: "/malikler", etiket: "Malikler", ikon: IconUsers },
   { yol: "/muteahhitler", etiket: "Müteahhitler", ikon: IconBriefcase },
-  { yol: "/surec", etiket: "Süreç Takibi", ikon: IconChecklist },
+  { yol: "/takvim", etiket: "Canlı İş Takvimi", ikon: IconCalendarEvent },
   { yol: "/aktiviteler", etiket: "Aktiviteler", ikon: IconHistory },
   { yol: "/kullanicilar", etiket: "Kullanıcılar", ikon: IconShieldLock, sadeceAdmin: true },
 ];
@@ -187,6 +188,10 @@ export function Kabuk({ oturum, children }: { oturum: Oturum; children: React.Re
               <TemaDugmesi />
             </div>
             <KullaniciMenusu oturum={oturum} />
+          </div>
+
+          <div className="me-3 flex-fill" style={{ maxWidth: "26rem" }}>
+            <GlobalArama />
           </div>
         </div>
       </header>

@@ -1,6 +1,6 @@
 # Kentsel Rota Panel
 
-Kentsel dönüşüm danışmanlığı için bina dosyası, malik onay ve müteahhit portföyü takip paneli.
+Kentsel dönüşüm danışmanlığı için bina dosyası, malik onay, müteahhit portföyü ve iş takvimi paneli.
 Tasarım [Tabler](https://tabler.io) (MIT) üzerine kurulu.
 
 ---
@@ -21,8 +21,8 @@ npm run dev            # http://localhost:3000
 | selin@kentselrota.com | `Deneme1234` | Danışman |
 | cemal@kentselrota.com | `Deneme1234` | İzleyici |
 
-> Demo veri 18 bina, 256 malik ve 8 müteahhit içerir. Canlıya geçmeden önce
-> **mutlaka** `npm run db:temizle` ile silin (aşağıya bakın).
+> Demo veri 18 bina, 256 malik, 8 müteahhit ve 12 randevu içerir. Canlıya geçmeden
+> önce **mutlaka** `npm run db:temizle` ile silin (aşağıya bakın).
 
 ---
 
@@ -31,19 +31,46 @@ npm run dev            # http://localhost:3000
 | Sayfa | İçerik |
 |---|---|
 | **Panel** | Aktif dosya, riskli yapı, çoğunluk sağlanan dosya sayıları; çoğunluğa en yakın dosyalar; aşama dağılımı; müteahhit portföyü; son hareketler |
-| **Binalar** | Ada/parsel bazlı dosya listesi, arama + durum/risk/aşama/ilçe/danışman filtreleri |
-| **Bina detayı** | Malik onay oranı (arsa payı bazlı), bağımsız bölüm tablosu, 16 adımlık süreç zaman çizelgesi, müteahhit kartı, görüşme notları |
-| **Malikler** | Kişi kayıtları, hangi binada hangi bölüme sahip, onay durumu |
-| **Müteahhitler** | Firma portföyü, puan, referans proje/daire sayısı, çalışma bölgeleri, kara liste |
-| **Süreç Takibi** | 16 aşamalı kanban panosu + tüm dosyaları tek ekranda gösteren matris tablosu |
+| **Binalar** | Ada/parsel bazlı dosya listesi, arama + durum/risk/aşama/ilçe/danışman filtreleri, CSV dışa aktarma |
+| **Bina detayı** | Malik onay oranı (arsa payı bazlı), bağımsız bölüm tablosu, 16 adımlık süreç zaman çizelgesi, müteahhit kartı, belgeler, görüşme notları |
+| **Malikler** | Kişi kayıtları, hangi binada hangi bölüme sahip, onay durumu, belgeler |
+| **Müteahhitler** | Firma portföyü, puan, referans proje/daire, çalışma bölgeleri, kara liste, belgeler |
+| **Canlı İş Takvimi** | Ay / hafta / gün görünümü; randevu ve toplantılar; süreç hedef tarihleri otomatik düşer; değişiklikler açık ekranlara anında yansır |
 | **Aktiviteler** | Tüm görüşme/telefon/toplantı/sistem kayıtlarının ortak akışı |
 | **Kullanıcılar** | Hesap açma, rol atama, aktif/pasif (sadece yönetici) |
 
 ### Roller
 
 - **Yönetici** — her şey; kullanıcı yönetimi ve kayıt silme.
-- **Danışman** — bina/malik/müteahhit ekler ve düzenler, silemez.
-- **İzleyici** — sadece görüntüler.
+- **Danışman** — bina/malik/müteahhit/randevu ekler ve düzenler, belge yükler; kayıt silemez.
+- **İzleyici** — sadece görüntüler ve dışa aktarır.
+
+### Ekle / düzenle akışı
+
+"Yeni Ekle" ve "Düzenle" tam sayfaya gitmez, modal açar. Modal durumu adres çubuğunda
+tutulur (`?yeni=1`, `?duzenle=<id>`): geri tuşu modalı kapatır, sayfa yenilenince modal
+açık kalır, bağlantı paylaşılabilir ve ekrandaki filtreler korunur.
+
+Eski `/yeni` ve `/[id]/duzenle` rotaları yer imi kırılmasın diye çalışmaya devam eder.
+
+---
+
+## Arama
+
+Üst çubuktaki arama bina, malik ve müteahhitte birden arar. `Ctrl+K` ile odaklanır,
+300 ms gecikmeyle sorgu atar, ok tuşlarıyla gezinilir.
+
+**Türkçe karakter sorunu ve çözümü:** SQLite'ın `LIKE` operatörü yalnızca ASCII
+harflerde büyük/küçük harf duyarsızdır — "Şimşek" kaydı küçük harfle "şimşek" aranınca
+bulunamıyordu. Bu yüzden her kayıtta normalize edilmiş bir `aramaMetni` sütunu tutulur
+(küçük harf + aksan sadeleştirmesi). Ek fayda: **"sirinevler" yazınca "Şirinevler"
+bulunur**, klavyede Türkçe karakter aramaya gerek kalmaz.
+
+Arama mantığı değişirse veya toplu veri içe aktarılırsa sütunları yeniden hesaplayın:
+
+```bash
+npm run db:arama
+```
 
 ---
 
@@ -58,25 +85,43 @@ export const COGUNLUK_ESIGI = 50;   // yüzde
 ```
 
 6306 sayılı Kanun'da 2023 değişikliği sonrası salt çoğunluk arandığı için varsayılan `50`
-bırakıldı. Kendi uygulamanıza göre (örn. `66.67`) değiştirebilirsiniz — panel, listeler ve
-grafikler otomatik olarak yeni eşiğe göre çalışır.
+bırakıldı. Kendi uygulamanıza göre (örn. `66.67`) değiştirebilirsiniz — panel, listeler,
+çizelgeler ve CSV çıktıları otomatik olarak yeni eşiğe göre çalışır.
 
 > Panel bir takip aracıdır; resmî işlemlerde ilgili idare ve tapu kayıtları esastır.
 
 ## Süreç adımları
 
-16 adımlık akış aynı dosyada tanımlı:
-
-```ts
-// src/lib/sabitler.ts
-export const SUREC_ADIMLARI = [
-  { deger: "ILK_GORUSME", etiket: "İlk Görüşme & Bilgilendirme", ... },
-  ...
-];
-```
-
+16 adımlık akış `src/lib/sabitler.ts` içindeki `SUREC_ADIMLARI` dizisinde tanımlı.
 Adım ekler, çıkarır veya sırasını değiştirirseniz **yeni** bina dosyaları buna göre oluşur.
-Mevcut dosyaların adımlarını da hizalamak için binayı düzenleyip aşamasını kaydetmeniz yeterli.
+Mevcut dosyaları hizalamak için binayı düzenleyip aşamasını kaydetmek yeterli.
+
+---
+
+## Belgeler
+
+Bina, malik ve müteahhit kayıtlarına belge yüklenebilir (PDF, resim, Word, Excel — en fazla 15 MB).
+
+**Dosyalar `public/` altında tutulmaz.** `public/` içindeki her şey Next tarafından oturum
+kontrolü olmadan servis edilir; tapu ve kimlik belgeleri için bu kabul edilemez. Dosyalar
+proje kökündeki `veri/belgeler/` klasörüne yazılır ve yalnızca `/api/belge/[id]` üzerinden,
+oturum doğrulandıktan sonra indirilebilir. Diskteki adlar rastgele (UUID) verilir.
+
+- Yükleme: yönetici + danışman
+- Silme: yönetici, ya da belgeyi kendi yükleyen kişi
+- İndirme: oturumu olan herkes
+
+## Dışa aktarma (CSV)
+
+| Nereden | Ne çıkar |
+|---|---|
+| Bina detayı → **Onay Çizelgesi** | Maliklerin arsa payları, onay durumları ve dosya özeti — toplantı/imza takibi için |
+| Binalar → **Dışa Aktar** | Ekrandaki filtreler uygulanmış bina listesi |
+| Malikler → **Dışa Aktar** | Her satır bir bağımsız bölüm bağlantısı |
+| Müteahhitler → **Dışa Aktar** | Portföy listesi |
+
+Çıktılar UTF-8 BOM + noktalı virgül ayırıcıyla üretilir; Türkçe Windows Excel'de çift
+tıklamayla düzgün açılır. Hücreler formül olarak yorumlanmasın diye kaçışlanır.
 
 ---
 
@@ -87,20 +132,34 @@ prisma/
   schema.prisma      Veri modeli
   seed.ts            Demo veri
   temizle.ts         Canlıya geçiş için veri temizleme
+  arama-doldur.ts    Arama sütunlarını yeniden hesaplar
 src/
   app/
     giris/           Giriş ekranı
     (panel)/         Oturum gerektiren tüm sayfalar
-      binalar/  malikler/  muteahhitler/  surec/  aktiviteler/  kullanicilar/  profil/
-    api/cikis/       Çıkış (POST)
+      binalar/  malikler/  muteahhitler/  takvim/  aktiviteler/  kullanicilar/  profil/
+    api/
+      arama/         Global arama
+      belge/[id]/    Oturum korumalı belge indirme
+      canli/         Canlı güncelleme (SSE)
+      cikis/         Çıkış
   components/
     kabuk.tsx        Sidebar + üst çubuk + tema anahtarı
+    modal.tsx        <dialog> tabanlı modal ve silme onayı
+    global-arama.tsx Üst çubuk araması
+    belgeler-karti.tsx
+    canli-tazele.tsx SSE dinleyicisi
     ortak.tsx        Rozet, kart, avatar, onay çubuğu vb.
   lib/
     sabitler.ts      Tüm durum tanımları, etiketler, renkler, süreç akışı
-    yardimcilar.ts   Tarih/sayı biçimleme, onay oranı hesabı
+    arama.ts         Türkçe normalizasyon
+    takvim.ts        Takvim ızgarası ve tarih yardımcıları
+    belge.ts         Dosya deposu (sunucu)
+    disa-aktar.ts    CSV üretimi
+    canli.ts         SSE yayını
     oturum.ts        JWT tabanlı oturum
   middleware.ts      Sayfa erişim koruması
+veri/belgeler/       Yüklenen belgeler (git dışı)
 ```
 
 Her modülün yazma işlemleri kendi `eylemler.ts` dosyasındadır (Next.js server actions).
@@ -111,7 +170,7 @@ Her modülün yazma işlemleri kendi `eylemler.ts` dosyasındadır (Next.js serv
 
 4 çekirdek / 8 GB RAM sınıfı bir bulut sunucu bu panel için fazlasıyla yeterlidir.
 
-### 1. Sunucuda Node.js kurun
+### 1. Node.js kurun
 
 ```bash
 curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -   # Ubuntu/Debian
@@ -128,7 +187,7 @@ npm ci
 cp .env.example .env
 nano .env                     # AUTH_SECRET'i uzun ve rastgele bir değerle doldurun
 npm run build
-npm run kurulum               # ilk kurulumda: veritabanı + demo veri
+npm run kurulum
 ```
 
 `AUTH_SECRET` üretmek için:
@@ -142,23 +201,15 @@ node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```bash
 pm2 start npm --name kentsel-rota -- start
 pm2 save
-pm2 startup                   # sunucu yeniden başlarsa otomatik kalksın
+pm2 startup
 ```
 
-Uygulama `localhost:3000` dinler.
+> **Tek instance şart.** Canlı güncelleme (takvimin kendiliğinden tazelenmesi) değişiklikleri
+> süreç belleğinde yayınlar. PM2'yi cluster moduna alırsanız (`-i max`) bir süreçteki değişiklik
+> diğerine ulaşmaz ve canlı güncelleme sessizce bozulur. Yukarıdaki komut tek instance açar;
+> öyle kalsın.
 
-### 4. Web sunucusunu bağlayın
-
-**cPanel kuruluysa:** ilgili domain için bir reverse proxy kuralı ekleyin
-(Apache include dosyası, `/usr/local/apache/conf/userdata/...`):
-
-```apache
-ProxyPreserveHost On
-ProxyPass / http://127.0.0.1:3000/
-ProxyPassReverse / http://127.0.0.1:3000/
-```
-
-**cPanel yoksa (önerilen):** nginx
+### 4. Nginx
 
 ```nginx
 server {
@@ -176,6 +227,16 @@ server {
         proxy_set_header X-Forwarded-Proto $scheme;
         proxy_cache_bypass $http_upgrade;
     }
+
+    # Canlı güncelleme (SSE) tamponlanırsa takılır
+    location /api/canli {
+        proxy_pass http://127.0.0.1:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Host $host;
+        proxy_buffering off;
+        proxy_cache off;
+        proxy_read_timeout 24h;
+    }
 }
 ```
 
@@ -188,19 +249,22 @@ sudo certbot --nginx -d panel.alanadiniz.com
 > **Önemli:** Oturum çerezi üretimde `secure` işaretlidir, yani panel **HTTPS üzerinden**
 > çalışmalıdır. SSL kurmadan giriş yapılamaz.
 
+**cPanel kullanıyorsanız:** aynı reverse proxy'yi Apache tarafında kurun; `/api/canli` için
+`flushpackets=on` ekleyin, aksi halde canlı güncelleme çalışmaz.
+
 ### 5. Demo veriyi silin
 
 ```bash
 ADMIN_EMAIL="siz@alanadiniz.com" ADMIN_SIFRE="kendi-guclu-sifreniz" npm run db:temizle
 ```
 
-Bu komut tüm demo kayıtları siler ve verdiğiniz adresle tek bir yönetici hesabı bırakır.
-Ekibin geri kalanını panel içindeki **Kullanıcılar → Yeni Kullanıcı** ekranından eklersiniz.
+Tüm demo kayıtları siler, verdiğiniz adresle tek bir yönetici hesabı bırakır. Ekibin
+geri kalanını panel içindeki **Kullanıcılar → Yeni Kullanıcı** ekranından eklersiniz.
 
 ### Güncelleme
 
 ```bash
-git pull                # veya dosyaları yükleyin
+git pull
 npm ci
 npm run build
 pm2 reload kentsel-rota
@@ -210,32 +274,33 @@ pm2 reload kentsel-rota
 
 ## Yedekleme
 
-Veritabanı tek bir dosyadır: `prisma/veritabani.db`
+İki şeyi yedekleyin:
 
 ```bash
-# Günlük yedek (crontab -e)
-0 2 * * * sqlite3 /var/www/kentsel-rota-panel/prisma/veritabani.db ".backup '/yedek/krp-$(date +\%F).db'"
+# Veritabanı (tek dosya)
+sqlite3 prisma/veritabani.db ".backup '/yedek/krp-$(date +%F).db'"
+
+# Yüklenen belgeler
+tar czf /yedek/belgeler-$(date +%F).tar.gz veri/belgeler
 ```
 
-`sqlite3` yoksa uygulamayı durdurup dosyayı kopyalamak da yeterlidir.
-`public/yuklemeler/` klasörünü de yedeğe dahil edin.
+`sqlite3` yoksa uygulamayı durdurup `prisma/veritabani.db` dosyasını kopyalamak da yeterlidir.
 
 ## PostgreSQL'e geçiş
 
-Kayıt sayısı büyürse veya eşzamanlı yazma artarsa:
-
 1. `prisma/schema.prisma` içinde `provider = "sqlite"` → `"postgresql"`
 2. `.env` içinde `DATABASE_URL="postgresql://kullanici:sifre@localhost:5432/kentselrota"`
-3. `npx prisma db push`
-4. Mevcut veriyi taşımak için `npx prisma db pull` / `pgloader` ya da bir kerelik aktarım betiği
+3. `npx prisma db push && npm run db:arama`
 
-Şema PostgreSQL uyumlu yazıldı; enum yerine `String` alanlar kullanıldığı için ek değişiklik gerekmez.
+Şema PostgreSQL uyumlu yazıldı; enum yerine `String` alanlar kullanıldığı için ek değişiklik
+gerekmez. PostgreSQL'de Prisma'nın `mode: "insensitive"` seçeneği de çalışır, ama normalize
+sütun aksan sadeleştirmesi sağladığı için yerinde bırakılması önerilir.
 
 ---
 
 ## Notlar
 
-- Tabler CSS `@tabler/core` paketinden gelir; Bootstrap JS kullanılmaz, açılır menüler ve
-  modallar React ile yazıldı. Bu yüzden hidrasyon sorunu yaşanmaz.
+- Tabler CSS `@tabler/core` paketinden gelir; **Bootstrap JS kullanılmaz**. Modallar native
+  `<dialog>` üzerine, açılır menüler React ile yazıldı — hidrasyon sorunu yaşanmaz.
 - Karanlık/aydınlık tema tercihi tarayıcıda (`localStorage`) saklanır.
 - Şifreler `bcrypt` ile saklanır, oturum `httpOnly` çerezdeki JWT ile yürür (7 gün).

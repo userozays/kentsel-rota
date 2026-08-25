@@ -89,11 +89,11 @@ export default async function PanelAnasayfa() {
         aciklama={`${sayi(aktifBinalar.length)} aktif dosya takip ediliyor.`}
         aksiyonlar={
           <>
-            <Link href="/binalar/yeni" className="btn btn-primary">
+            <Link href="/binalar?yeni=1" className="btn btn-primary">
               Yeni Bina Dosyası
             </Link>
-            <Link href="/surec" className="btn">
-              Süreç Takibi
+            <Link href="/takvim" className="btn">
+              İş Takvimi
             </Link>
           </>
         }

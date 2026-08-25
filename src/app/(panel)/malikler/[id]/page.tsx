@@ -22,6 +22,8 @@ import {
 } from "@/components/ortak";
 import { AktiviteFormu } from "../../binalar/[id]/etkilesim";
 import { SilOnayi } from "@/components/modal";
+import { BelgelerKarti } from "@/components/belgeler-karti";
+import { belgeleriGetir } from "@/lib/belge-listesi";
 import { MalikModali } from "../malik-modali";
 import { malikSil } from "../eylemler";
 
@@ -33,9 +35,16 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: malik?.adSoyad ?? "Malik" };
 }
 
-export default async function MalikDetaySayfasi({ params }: { params: Promise<{ id: string }> }) {
+export default async function MalikDetaySayfasi({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const oturum = await oturumGerekli();
   const { id } = await params;
+  const p = await searchParams;
 
   const malik = await db.malik.findUnique({
     where: { id },
@@ -58,6 +67,7 @@ export default async function MalikDetaySayfasi({ params }: { params: Promise<{ 
   if (!malik) notFound();
 
   const duzenlenebilir = yazabilir(oturum.rol);
+  const belgeler = await belgeleriGetir({ malikId: malik.id }, oturum);
   const toplamPay = malik.hisseler.reduce((t, h) => t + h.hisseOrani, 0);
 
   return (
@@ -104,6 +114,8 @@ export default async function MalikDetaySayfasi({ params }: { params: Promise<{ 
           ) : null
         }
       />
+
+      {duzenlenebilir && p.duzenle === malik.id && <MalikModali malik={malik} />}
 
       <div className="page-body">
         <div className="container-xl">
@@ -226,6 +238,10 @@ export default async function MalikDetaySayfasi({ params }: { params: Promise<{ 
                   </div>
                 )}
               </div>
+              <div className="mb-3">
+                <BelgelerKarti belgeler={belgeler} malikId={malik.id} duzenlenebilir={duzenlenebilir} />
+              </div>
+
 
               <div className="card">
                 <div className="card-header">

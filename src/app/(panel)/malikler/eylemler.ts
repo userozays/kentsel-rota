@@ -6,6 +6,7 @@ import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
 import { yazabilir } from "@/lib/sabitler";
 import { bosaNull, formDegerleri } from "@/lib/yardimcilar";
+import { malikAramaMetni } from "@/lib/arama";
 
 export type FormDurumu = { hata?: string; basarili?: boolean; kayitId?: string; degerler?: Record<string, string> };
 
@@ -28,9 +29,10 @@ export async function malikKaydet(_onceki: FormDurumu, form: FormData): Promise<
     notlar: bosaNull(form.get("notlar")),
   };
 
+  const kayitVerisi = { ...veri, aramaMetni: malikAramaMetni(veri) };
   const malik = id
-    ? await db.malik.update({ where: { id }, data: veri })
-    : await db.malik.create({ data: veri });
+    ? await db.malik.update({ where: { id }, data: kayitVerisi })
+    : await db.malik.create({ data: kayitVerisi });
 
   revalidatePath("/malikler");
   revalidatePath(`/malikler/${malik.id}`);

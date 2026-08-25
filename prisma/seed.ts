@@ -1,6 +1,7 @@
 import { PrismaClient } from "@prisma/client";
 import bcrypt from "bcryptjs";
 import { SUREC_SIRASI } from "../src/lib/sabitler";
+import { binaAramaMetni, malikAramaMetni, muteahhitAramaMetni } from "../src/lib/arama";
 
 const db = new PrismaClient();
 
@@ -74,6 +75,7 @@ const OLUMSUZ_NOTLARI = [
 
 async function main() {
   console.log("Mevcut kayitlar temizleniyor...");
+  await db.randevu.deleteMany();
   await db.aktivite.deleteMany();
   await db.belge.deleteMany();
   await db.surecAdimi.deleteMany();
@@ -296,6 +298,62 @@ async function main() {
       },
     });
   }
+
+  /* --------------------------------------------------------- Randevular */
+  const RANDEVU_TANIMLARI = [
+    { baslik: "Malik bilgilendirme toplantısı", tur: "TOPLANTI", gun: 2, saat: 19, yer: "Mahalle muhtarlığı" },
+    { baslik: "Müteahhit teklif sunumu", tur: "GORUSME", gun: 3, saat: 14, yer: "Ofis" },
+    { baslik: "Noterde sözleşme imzası", tur: "NOTER", gun: 5, saat: 11, yer: "3. Noterlik" },
+    { baslik: "Saha keşif ziyareti", tur: "SAHA", gun: 6, saat: 9, yer: null },
+    { baslik: "Belediye imar görüşmesi", tur: "RESMI", gun: 8, saat: 10, yer: "İmar Müdürlüğü" },
+    { baslik: "Tahliye son gün takibi", tur: "TAHLIYE", gun: 11, saat: 8, yer: null },
+    { baslik: "Malik itirazı görüşmesi", tur: "GORUSME", gun: 13, saat: 16, yer: "Ofis" },
+    { baslik: "İkinci malik toplantısı", tur: "TOPLANTI", gun: 17, saat: 19, yer: "Kültür merkezi" },
+    { baslik: "Kira yardımı evrak teslimi", tur: "RESMI", gun: 20, saat: 13, yer: "Kaymakamlık" },
+    { baslik: "Şantiye ilerleme kontrolü", tur: "SAHA", gun: 24, saat: 10, yer: null },
+    { baslik: "Geçen haftaki toplantı (tamamlandı)", tur: "TOPLANTI", gun: -4, saat: 18, yer: "Ofis", durum: "TAMAMLANDI" },
+    { baslik: "İptal edilen görüşme", tur: "GORUSME", gun: -2, saat: 15, yer: null, durum: "IPTAL" },
+  ];
+
+  const tumBinalar = await db.bina.findMany({ select: { id: true } });
+  const tumMuteahhitler = await db.muteahhit.findMany({ select: { id: true } });
+
+  for (const r of RANDEVU_TANIMLARI) {
+    const t = new Date();
+    t.setDate(t.getDate() + r.gun);
+    t.setHours(r.saat, 0, 0, 0);
+    const bitis = new Date(t);
+    bitis.setHours(t.getHours() + 1);
+
+    await db.randevu.create({
+      data: {
+        baslik: r.baslik,
+        tur: r.tur,
+        durum: r.durum ?? "PLANLANDI",
+        baslangic: t,
+        bitis,
+        yer: r.yer,
+        binaId: rnd() < 0.8 ? sec(tumBinalar).id : null,
+        muteahhitId: r.tur === "GORUSME" || r.tur === "NOTER" ? sec(tumMuteahhitler).id : null,
+        sorumluId: sec(danismanlar).id,
+        olusturanId: kullanicilar[0].id,
+        katilimcilar: rnd() < 0.5 ? "Selin Aydın, Barış Korkmaz" : null,
+      },
+    });
+  }
+  console.log(RANDEVU_TANIMLARI.length + " randevu olusturuldu");
+
+  /* Arama sutunlarini doldur */
+  for (const b of await db.bina.findMany()) {
+    await db.bina.update({ where: { id: b.id }, data: { aramaMetni: binaAramaMetni(b) } });
+  }
+  for (const m of await db.malik.findMany()) {
+    await db.malik.update({ where: { id: m.id }, data: { aramaMetni: malikAramaMetni(m) } });
+  }
+  for (const m of await db.muteahhit.findMany()) {
+    await db.muteahhit.update({ where: { id: m.id }, data: { aramaMetni: muteahhitAramaMetni(m) } });
+  }
+  console.log("arama sutunlari dolduruldu");
 
   console.log("");
   console.log("Tamamlandi. Giris bilgileri:");

@@ -26,6 +26,8 @@ import {
 } from "@/components/ortak";
 import { AktiviteFormu } from "../../binalar/[id]/etkilesim";
 import { SilOnayi } from "@/components/modal";
+import { BelgelerKarti } from "@/components/belgeler-karti";
+import { belgeleriGetir } from "@/lib/belge-listesi";
 import { MuteahhitModali } from "../muteahhit-modali";
 import { muteahhitSil } from "../eylemler";
 
@@ -37,7 +39,14 @@ export async function generateMetadata({ params }: { params: Promise<{ id: strin
   return { title: m?.firmaAdi ?? "Müteahhit" };
 }
 
-export default async function MuteahhitDetaySayfasi({ params }: { params: Promise<{ id: string }> }) {
+export default async function MuteahhitDetaySayfasi({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
+  const p = await searchParams;
   const oturum = await oturumGerekli();
   const { id } = await params;
 
@@ -59,6 +68,7 @@ export default async function MuteahhitDetaySayfasi({ params }: { params: Promis
   if (!muteahhit) notFound();
 
   const duzenlenebilir = yazabilir(oturum.rol);
+  const belgeler = await belgeleriGetir({ muteahhitId: muteahhit.id }, oturum);
   const bolgeler = (muteahhit.calismaBolgeleri ?? "")
     .split(",")
     .map((b) => b.trim())
@@ -108,6 +118,8 @@ export default async function MuteahhitDetaySayfasi({ params }: { params: Promis
           ) : null
         }
       />
+
+      {duzenlenebilir && p.duzenle === muteahhit.id && <MuteahhitModali muteahhit={muteahhit} />}
 
       <div className="page-body">
         <div className="container-xl">
@@ -262,6 +274,10 @@ export default async function MuteahhitDetaySayfasi({ params }: { params: Promis
                     </table>
                   </div>
                 )}
+              </div>
+
+              <div className="mb-3">
+                <BelgelerKarti belgeler={belgeler} muteahhitId={muteahhit.id} duzenlenebilir={duzenlenebilir} />
               </div>
 
               <div className="card">

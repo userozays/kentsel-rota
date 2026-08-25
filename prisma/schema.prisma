@@ -26,6 +26,8 @@ model Kullanici {
   aktiviteler   Aktivite[]
   belgeler      Belge[]
   surecAdimlari SurecAdimi[]
+  olusturduguRandevular Randevu[] @relation("RandevuOlusturan")
+  sorumluRandevular     Randevu[] @relation("RandevuSorumlu")
 }
 
 model Bina {
@@ -49,6 +51,9 @@ model Bina {
   oncelik    String @default("NORMAL")
   notlar     String?
 
+  /// Aksanı sadeleştirilmiş, küçük harfe indirgenmiş arama metni (bkz. src/lib/arama.ts)
+  aramaMetni String @default("")
+
   danismanId  String?
   danisman    Kullanici? @relation("BinaDanisman", fields: [danismanId], references: [id], onDelete: SetNull)
   muteahhitId String?
@@ -58,12 +63,14 @@ model Bina {
   surecAdimlari SurecAdimi[]
   aktiviteler   Aktivite[]
   belgeler      Belge[]
+  randevular    Randevu[]
 
   olusturmaTarihi  DateTime @default(now())
   guncellemeTarihi DateTime @updatedAt
 
   @@index([durum])
   @@index([asama])
+  @@index([aramaMetni])
 }
 
 model Malik {
@@ -77,13 +84,19 @@ model Malik {
   adres    String?
   notlar   String?
 
+  /// Arama metni (bkz. src/lib/arama.ts)
+  aramaMetni String @default("")
+
   hisseler    Hisse[]
   aktiviteler Aktivite[]
+  belgeler    Belge[]
+  randevular  Randevu[]
 
   olusturmaTarihi  DateTime @default(now())
   guncellemeTarihi DateTime @updatedAt
 
   @@index([adSoyad])
+  @@index([aramaMetni])
 }
 
 /// Bir malikin bir binadaki bagimsiz bolumu ve onay durumu
@@ -131,13 +144,19 @@ model Muteahhit {
   durum            String  @default("AKTIF") // AKTIF | PASIF | KARA_LISTE
   notlar           String?
 
+  /// Arama metni (bkz. src/lib/arama.ts)
+  aramaMetni String @default("")
+
   binalar     Bina[]
   aktiviteler Aktivite[]
+  belgeler    Belge[]
+  randevular  Randevu[]
 
   olusturmaTarihi  DateTime @default(now())
   guncellemeTarihi DateTime @updatedAt
 
   @@index([durum])
+  @@index([aramaMetni])
 }
 
 model SurecAdimi {
@@ -192,9 +211,48 @@ model Belge {
 
   binaId String?
   bina   Bina?   @relation(fields: [binaId], references: [id], onDelete: Cascade)
+  malikId String?
+  malik   Malik?  @relation(fields: [malikId], references: [id], onDelete: Cascade)
+  muteahhitId String?
+  muteahhit   Muteahhit? @relation(fields: [muteahhitId], references: [id], onDelete: Cascade)
 
   yukleyenId String
   yukleyen   Kullanici @relation(fields: [yukleyenId], references: [id], onDelete: Cascade)
 
   tarih DateTime @default(now())
+}
+
+/// Canlı İş Takvimi kayıtları: toplantı, noter randevusu, tahliye tarihi vb.
+model Randevu {
+  id       String  @id @default(cuid())
+  baslik   String
+  aciklama String?
+  tur      String  @default("TOPLANTI") // TOPLANTI | GORUSME | NOTER | TAHLIYE | SAHA | RESMI | DIGER
+  durum    String  @default("PLANLANDI") // PLANLANDI | TAMAMLANDI | IPTAL
+
+  baslangic DateTime
+  bitis     DateTime?
+  tumGun    Boolean  @default(false)
+  yer       String?
+
+  katilimcilar String?
+
+  binaId      String?
+  bina        Bina?      @relation(fields: [binaId], references: [id], onDelete: Cascade)
+  malikId     String?
+  malik       Malik?     @relation(fields: [malikId], references: [id], onDelete: Cascade)
+  muteahhitId String?
+  muteahhit   Muteahhit? @relation(fields: [muteahhitId], references: [id], onDelete: Cascade)
+
+  sorumluId String?
+  sorumlu   Kullanici? @relation("RandevuSorumlu", fields: [sorumluId], references: [id], onDelete: SetNull)
+
+  olusturanId String
+  olusturan   Kullanici @relation("RandevuOlusturan", fields: [olusturanId], references: [id], onDelete: Cascade)
+
+  olusturmaTarihi  DateTime @default(now())
+  guncellemeTarihi DateTime @updatedAt
+
+  @@index([baslangic])
+  @@index([durum])
 }

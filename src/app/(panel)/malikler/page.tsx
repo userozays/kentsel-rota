@@ -1,11 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IconEdit, IconFilter, IconMail, IconPhone, IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconDownload,
+  IconEdit, IconFilter, IconMail, IconPhone, IconPlus, IconSearch } from "@tabler/icons-react";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
 import { MALIK_TIPI, MALIK_TIPLERI, ONAY_DURUMLARI, ONAY_DURUMU, yazabilir } from "@/lib/sabitler";
 import { sayi } from "@/lib/yardimcilar";
+import { aramaKelimeleri } from "@/lib/arama";
 import { Avatar, BosDurum, Rozet, SayfaBasligi } from "@/components/ortak";
 import { Sayfalama } from "@/components/sayfalama";
 import { MalikModali } from "./malik-modali";
@@ -25,15 +27,8 @@ export default async function MaliklerSayfasi({
   const sayfa = Math.max(1, Number(p.sayfa) || 1);
 
   const kosullar: Prisma.MalikWhereInput[] = [];
-  if (p.q) {
-    kosullar.push({
-      OR: [
-        { adSoyad: { contains: p.q } },
-        { tcKimlik: { contains: p.q } },
-        { telefon: { contains: p.q } },
-        { email: { contains: p.q } },
-      ],
-    });
+  for (const kelime of aramaKelimeleri(p.q)) {
+    kosullar.push({ aramaMetni: { contains: kelime } });
   }
   if (p.tip) kosullar.push({ tip: p.tip });
   if (p.onay) kosullar.push({ hisseler: { some: { onayDurumu: p.onay } } });
@@ -63,6 +58,16 @@ export default async function MaliklerSayfasi({
   const modalAcik = duzenlenebilir && (p.yeni === "1" || Boolean(p.duzenle));
   const duzenlenecek = modalAcik && p.duzenle ? await db.malik.findUnique({ where: { id: p.duzenle } }) : null;
 
+  /** Ekrandaki filtreleri koruyarak CSV bağlantısı üretir */
+  const disaAktarYolu = () => {
+    const q = new URLSearchParams();
+    for (const [ad, deger] of Object.entries(p)) {
+      if (deger && !["yeni", "duzenle", "sayfa"].includes(ad)) q.set(ad, deger);
+    }
+    const s = q.toString();
+    return s ? "/malikler/disa-aktar?" + s : "/malikler/disa-aktar";
+  };
+
   const modalYolu = (ek: Record<string, string>) => {
     const q = new URLSearchParams();
     for (const [ad, deger] of Object.entries(p)) {
@@ -80,10 +85,16 @@ export default async function MaliklerSayfasi({
         aciklama={`${sayi(toplam)} kişi listeleniyor`}
         aksiyonlar={
           duzenlenebilir ? (
+            <>
+            <a href={disaAktarYolu()} className="btn">
+              <IconDownload size={18} stroke={1.5} className="me-1" />
+              Dışa Aktar
+            </a>
             <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
               <IconPlus size={18} stroke={1.5} className="me-1" />
               Yeni Malik
             </Link>
+            </>
           ) : null
         }
       />
