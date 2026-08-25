@@ -1,0 +1,200 @@
+// Kentsel Rota Panel - Veri Modeli
+// SQLite kullanildigi icin Prisma enum'lari desteklenmez;
+// sabit degerler src/lib/sabitler.ts icinde tanimlidir.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model Kullanici {
+  id              String    @id @default(cuid())
+  ad              String
+  email           String    @unique
+  sifreHash       String
+  rol             String    @default("DANISMAN") // ADMIN | DANISMAN | IZLEYICI
+  telefon         String?
+  aktif           Boolean   @default(true)
+  sonGiris        DateTime?
+  olusturmaTarihi DateTime  @default(now())
+
+  binalar       Bina[]       @relation("BinaDanisman")
+  aktiviteler   Aktivite[]
+  belgeler      Belge[]
+  surecAdimlari SurecAdimi[]
+}
+
+model Bina {
+  id                  String  @id @default(cuid())
+  kod                 String  @unique
+  baslik              String
+  il                  String
+  ilce                String
+  mahalle             String
+  ada                 String
+  parsel              String
+  adres               String?
+  katSayisi           Int?
+  bagimsizBolumSayisi Int     @default(0)
+  yapimYili           Int?
+  arsaAlani           Float?
+
+  riskDurumu String @default("TESPIT_EDILMEDI")
+  asama      String @default("ILK_GORUSME")
+  durum      String @default("AKTIF")
+  oncelik    String @default("NORMAL")
+  notlar     String?
+
+  danismanId  String?
+  danisman    Kullanici? @relation("BinaDanisman", fields: [danismanId], references: [id], onDelete: SetNull)
+  muteahhitId String?
+  muteahhit   Muteahhit? @relation(fields: [muteahhitId], references: [id], onDelete: SetNull)
+
+  hisseler      Hisse[]
+  surecAdimlari SurecAdimi[]
+  aktiviteler   Aktivite[]
+  belgeler      Belge[]
+
+  olusturmaTarihi  DateTime @default(now())
+  guncellemeTarihi DateTime @updatedAt
+
+  @@index([durum])
+  @@index([asama])
+}
+
+model Malik {
+  id       String  @id @default(cuid())
+  adSoyad  String
+  tip      String  @default("GERCEK") // GERCEK | TUZEL
+  tcKimlik String?
+  telefon  String?
+  telefon2 String?
+  email    String?
+  adres    String?
+  notlar   String?
+
+  hisseler    Hisse[]
+  aktiviteler Aktivite[]
+
+  olusturmaTarihi  DateTime @default(now())
+  guncellemeTarihi DateTime @updatedAt
+
+  @@index([adSoyad])
+}
+
+/// Bir malikin bir binadaki bagimsiz bolumu ve onay durumu
+model Hisse {
+  id      String @id @default(cuid())
+  binaId  String
+  bina    Bina   @relation(fields: [binaId], references: [id], onDelete: Cascade)
+  malikId String
+  malik   Malik  @relation(fields: [malikId], references: [id], onDelete: Cascade)
+
+  bagimsizBolumNo String?
+  kullanimTuru    String  @default("MESKEN") // MESKEN | ISYERI | DEPO | DIGER
+  arsaPayiPay     Int?
+  arsaPayiPayda   Int?
+  hisseOrani      Float   @default(0) // yuzde (0-100)
+
+  onayDurumu String    @default("BEKLIYOR") // BEKLIYOR | OLUMLU | OLUMSUZ | ULASILAMADI
+  onayTarihi DateTime?
+  notlar     String?
+
+  olusturmaTarihi DateTime @default(now())
+
+  @@index([binaId])
+  @@index([malikId])
+  @@index([onayDurumu])
+}
+
+model Muteahhit {
+  id           String  @id @default(cuid())
+  kod          String  @unique
+  firmaAdi     String
+  yetkiliKisi  String?
+  telefon      String?
+  email        String?
+  vergiDairesi String?
+  vergiNo      String?
+  adres        String?
+  websitesi    String?
+
+  calismaBolgeleri String?
+  tamamlananProje  Int     @default(0)
+  devamEdenProje   Int     @default(0)
+  toplamDaire      Int     @default(0)
+  puan             Int     @default(0) // 0-5
+  durum            String  @default("AKTIF") // AKTIF | PASIF | KARA_LISTE
+  notlar           String?
+
+  binalar     Bina[]
+  aktiviteler Aktivite[]
+
+  olusturmaTarihi  DateTime @default(now())
+  guncellemeTarihi DateTime @updatedAt
+
+  @@index([durum])
+}
+
+model SurecAdimi {
+  id     String @id @default(cuid())
+  binaId String
+  bina   Bina   @relation(fields: [binaId], references: [id], onDelete: Cascade)
+
+  adim  String
+  sira  Int
+  durum String @default("BEKLIYOR") // BEKLIYOR | DEVAM | TAMAMLANDI | ATLANDI
+
+  baslangicTarihi  DateTime?
+  tamamlanmaTarihi DateTime?
+  hedefTarih       DateTime?
+
+  sorumluId String?
+  sorumlu   Kullanici? @relation(fields: [sorumluId], references: [id], onDelete: SetNull)
+  aciklama  String?
+
+  @@unique([binaId, adim])
+  @@index([durum])
+}
+
+model Aktivite {
+  id      String   @id @default(cuid())
+  tur     String // NOT | GORUSME | TELEFON | TOPLANTI | EPOSTA | SISTEM
+  baslik  String
+  icerik  String?
+  tarih   DateTime @default(now())
+
+  kullaniciId String
+  kullanici   Kullanici @relation(fields: [kullaniciId], references: [id], onDelete: Cascade)
+
+  binaId      String?
+  bina        Bina?      @relation(fields: [binaId], references: [id], onDelete: Cascade)
+  malikId     String?
+  malik       Malik?     @relation(fields: [malikId], references: [id], onDelete: Cascade)
+  muteahhitId String?
+  muteahhit   Muteahhit? @relation(fields: [muteahhitId], references: [id], onDelete: Cascade)
+
+  @@index([tarih])
+}
+
+model Belge {
+  id        String  @id @default(cuid())
+  ad        String
+  dosyaAdi  String
+  dosyaYolu String
+  mimeTur   String?
+  boyut     Int     @default(0)
+  kategori  String  @default("DIGER")
+
+  binaId String?
+  bina   Bina?   @relation(fields: [binaId], references: [id], onDelete: Cascade)
+
+  yukleyenId String
+  yukleyen   Kullanici @relation(fields: [yukleyenId], references: [id], onDelete: Cascade)
+
+  tarih DateTime @default(now())
+}
