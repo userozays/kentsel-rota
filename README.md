@@ -17,9 +17,9 @@ npm run dev            # http://localhost:3000
 
 | E-posta | Şifre | Rol |
 |---|---|---|
-| admin@kentselrota.test | `Deneme1234` | Yönetici |
-| selin@kentselrota.test | `Deneme1234` | Danışman |
-| cemal@kentselrota.test | `Deneme1234` | İzleyici |
+| admin@kentselrota.com | `Deneme1234` | Yönetici |
+| selin@kentselrota.com | `Deneme1234` | Danışman |
+| cemal@kentselrota.com | `Deneme1234` | İzleyici |
 
 > Demo veri 18 bina, 256 malik ve 8 müteahhit içerir. Canlıya geçmeden önce
 > **mutlaka** `npm run db:temizle` ile silin (aşağıya bakın).
