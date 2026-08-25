@@ -4,8 +4,8 @@
  *
  *   npm run db:temizle
  *
- * Ortam değişkenleriyle yönetici bilgilerini verebilirsiniz:
- *   ADMIN_AD, ADMIN_EMAIL, ADMIN_SIFRE
+ * Yönetici hesabı bilgileri ortam değişkenlerinden alınır:
+ *   ADMIN_AD (isteğe bağlı), ADMIN_EMAIL, ADMIN_SIFRE
  */
 
 import { PrismaClient } from "@prisma/client";
@@ -15,13 +15,21 @@ import readline from "node:readline/promises";
 const db = new PrismaClient();
 
 async function main() {
-  const ad = process.env.ADMIN_AD ?? "Özay Hilmi";
-  const email = (process.env.ADMIN_EMAIL ?? "ozay.hilmi@hedefltd.com").toLowerCase();
+  const ad = process.env.ADMIN_AD ?? "Yönetici";
+  const email = (process.env.ADMIN_EMAIL ?? "").trim().toLowerCase();
   const sifre = process.env.ADMIN_SIFRE;
+
+  const ornek = 'ADMIN_EMAIL="siz@alanadiniz.com" ADMIN_SIFRE="CokGizliSifre1" npm run db:temizle';
+
+  if (!email || !email.includes("@")) {
+    console.error("ADMIN_EMAIL ortam degiskenine gecerli bir e-posta adresi verin.");
+    console.error("Ornek:  " + ornek);
+    process.exit(1);
+  }
 
   if (!sifre || sifre.length < 8) {
     console.error("ADMIN_SIFRE ortam degiskenini en az 8 karakter olarak verin.");
-    console.error('Ornek:  ADMIN_SIFRE="CokGizliSifre1" npm run db:temizle');
+    console.error("Ornek:  " + ornek);
     process.exit(1);
   }
 

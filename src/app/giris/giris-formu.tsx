@@ -29,7 +29,7 @@ export function GirisFormu({ devam }: { devam: string }) {
           name="email"
           type="email"
           className="form-control"
-          placeholder="ad.soyad@hedefltd.com"
+          placeholder="ad.soyad@sirketiniz.com"
           autoComplete="username"
           required
           autoFocus defaultValue={girilen.email ?? ""} />

@@ -197,7 +197,7 @@ export function Kabuk({ oturum, children }: { oturum: Oturum; children: React.Re
           <div className="container-xl">
             <div className="row text-center align-items-center flex-row-reverse">
               <div className="col-12 col-lg-auto mt-3 mt-lg-0">
-                <span className="text-secondary small">Kentsel Rota Panel · Hedef Ltd.</span>
+                <span className="text-secondary small">Kentsel Rota Panel</span>
               </div>
               <div className="col-12 col-lg-auto mt-3 mt-lg-0">
                 <span className="text-secondary small">

@@ -86,11 +86,11 @@ async function main() {
   /* ------------------------------------------------------------ Kullanicilar */
   const sifre = bcrypt.hashSync("Deneme1234", 10);
   const kullaniciTanimlari = [
-    { ad: "Özay Hilmi", email: "ozay.hilmi@hedefltd.com", rol: "ADMIN", telefon: "0532 000 00 01" },
-    { ad: "Selin Aydın", email: "selin@hedefltd.com", rol: "DANISMAN", telefon: "0532 000 00 02" },
-    { ad: "Barış Korkmaz", email: "baris@hedefltd.com", rol: "DANISMAN", telefon: "0532 000 00 03" },
-    { ad: "Merve Tekin", email: "merve@hedefltd.com", rol: "DANISMAN", telefon: "0532 000 00 04" },
-    { ad: "Cemal Bulut", email: "cemal@hedefltd.com", rol: "IZLEYICI", telefon: "0532 000 00 05" },
+    { ad: "Kerem Demir", email: "admin@kentselrota.test", rol: "ADMIN", telefon: "0532 000 00 01" },
+    { ad: "Selin Aydın", email: "selin@kentselrota.test", rol: "DANISMAN", telefon: "0532 000 00 02" },
+    { ad: "Barış Korkmaz", email: "baris@kentselrota.test", rol: "DANISMAN", telefon: "0532 000 00 03" },
+    { ad: "Merve Tekin", email: "merve@kentselrota.test", rol: "DANISMAN", telefon: "0532 000 00 04" },
+    { ad: "Cemal Bulut", email: "cemal@kentselrota.test", rol: "IZLEYICI", telefon: "0532 000 00 05" },
   ];
 
   const kullanicilar = [];
@@ -299,7 +299,7 @@ async function main() {
 
   console.log("");
   console.log("Tamamlandi. Giris bilgileri:");
-  console.log("  E-posta : ozay.hilmi@hedefltd.com");
+  console.log("  E-posta : admin@kentselrota.test");
   console.log("  Sifre   : Deneme1234");
 }
 

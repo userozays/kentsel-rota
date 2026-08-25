@@ -17,9 +17,9 @@ npm run dev            # http://localhost:3000
 
 | E-posta | Şifre | Rol |
 |---|---|---|
-| ozay.hilmi@hedefltd.com | `Deneme1234` | Yönetici |
-| selin@hedefltd.com | `Deneme1234` | Danışman |
-| cemal@hedefltd.com | `Deneme1234` | İzleyici |
+| admin@kentselrota.test | `Deneme1234` | Yönetici |
+| selin@kentselrota.test | `Deneme1234` | Danışman |
+| cemal@kentselrota.test | `Deneme1234` | İzleyici |
 
 > Demo veri 18 bina, 256 malik ve 8 müteahhit içerir. Canlıya geçmeden önce
 > **mutlaka** `npm run db:temizle` ile silin (aşağıya bakın).
@@ -107,9 +107,9 @@ Her modülün yazma işlemleri kendi `eylemler.ts` dosyasındadır (Next.js serv
 
 ---
 
-## Canlıya alma (Veridyen pnCloud / VPS)
+## Canlıya alma (VPS)
 
-Sunucu: 4 çekirdek, 8 GB RAM, 160 GB NVMe — bu panel için fazlasıyla yeterli.
+4 çekirdek / 8 GB RAM sınıfı bir bulut sunucu bu panel için fazlasıyla yeterlidir.
 
 ### 1. Sunucuda Node.js kurun
 
@@ -191,11 +191,11 @@ sudo certbot --nginx -d panel.alanadiniz.com
 ### 5. Demo veriyi silin
 
 ```bash
-ADMIN_SIFRE="kendi-guclu-sifreniz" npm run db:temizle
+ADMIN_EMAIL="siz@alanadiniz.com" ADMIN_SIFRE="kendi-guclu-sifreniz" npm run db:temizle
 ```
 
-Bu komut tüm demo kayıtları siler ve tek bir yönetici hesabı bırakır. Ekibin diğer
-4 kişisini panel içindeki **Kullanıcılar → Yeni Kullanıcı** ekranından eklersiniz.
+Bu komut tüm demo kayıtları siler ve verdiğiniz adresle tek bir yönetici hesabı bırakır.
+Ekibin geri kalanını panel içindeki **Kullanıcılar → Yeni Kullanıcı** ekranından eklersiniz.
 
 ### Güncelleme
 
