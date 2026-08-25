@@ -11,3 +11,26 @@ desktop.ini
 # Yerel yedekler
 *.local.json
 yedek-*.json
+
+# Next.js
+/.next/
+/out/
+next-env.d.ts
+
+# Bağımlılıklar
+/node_modules/
+
+# Ortam değişkenleri
+.env
+.env*.local
+
+# Veritabanı
+*.db
+*.db-journal
+prisma/*.db*
+
+# TypeScript derleme önbelleği
+tsconfig.tsbuildinfo
+
+# Referans gorseller (depoya girmesin)
+Ekran Alıntısı*.PNG
