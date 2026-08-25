@@ -29,7 +29,7 @@ export default async function YeniBinaSayfasi() {
     <>
       <SayfaBasligi ustBaslik="Binalar" baslik="Yeni Bina Dosyasi" />
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <BinaFormu danismanlar={danismanlar} muteahhitler={muteahhitler} />
         </div>
       </div>

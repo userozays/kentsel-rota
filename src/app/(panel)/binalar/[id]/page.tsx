@@ -179,7 +179,7 @@ export default async function BinaDetaySayfasi({
       />
 
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           {modalAcik && (
             <BinaModali bina={bina} danismanlar={formDanismanlari} muteahhitler={formMuteahhitleri} />
           )}

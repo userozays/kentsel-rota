@@ -137,7 +137,7 @@ export default async function BinalarSayfasi({
       )}
 
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           {/* --------------------------------------------------------- Filtreler */}
           <div className="card mb-3">
             <div className="card-body">

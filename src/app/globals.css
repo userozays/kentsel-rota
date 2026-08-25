@@ -400,3 +400,49 @@ a.krp-olay:hover {
     content: "";
   }
 }
+
+/* -------------------------------------------- Kenar çubuğu alt bölümü
+   Tema ve çıkış düğmeleri. Tabler'da .navbar-nav flex-grow:1 taşıdığı için
+   bu blok listeden sonra kendiliğinden en alta oturur. */
+
+.krp-kenar-alt {
+  flex-shrink: 0;
+  padding: 0.5rem 0;
+  margin-top: 0.5rem;
+  border-top: 1px solid var(--tblr-border-color);
+}
+
+.krp-kenar-dugme {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  border: 0;
+  background: transparent;
+  color: var(--tblr-navbar-color, var(--tblr-body-color));
+  font-size: 0.875rem;
+  text-align: left;
+  cursor: pointer;
+}
+
+.krp-kenar-dugme:hover {
+  color: var(--tblr-navbar-active-color, var(--tblr-body-color));
+  background: var(--tblr-bg-surface-secondary);
+}
+
+.krp-kenar-dugme .nav-link-icon {
+  display: inline-flex;
+  opacity: 0.7;
+}
+
+.krp-kenar-cikis:hover {
+  color: var(--tblr-red);
+}
+
+/* Mobilde menü açıldığında alt blok listenin hemen ardında görünür */
+@media (min-width: 992px) {
+  .navbar-vertical.navbar-expand-lg .navbar-collapse {
+    flex: 1 1 auto;
+  }
+}

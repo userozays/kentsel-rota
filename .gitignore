@@ -11,6 +11,7 @@ public/yuklemeler/*
 !public/yuklemeler/.gitkeep
 .DS_Store
 next-env.d.ts
+*.tsbuildinfo
 
 veri/belgeler/*
 !veri/belgeler/.gitkeep

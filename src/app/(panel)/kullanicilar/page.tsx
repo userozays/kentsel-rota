@@ -34,7 +34,7 @@ export default async function KullanicilarSayfasi() {
       />
 
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <Uyari tur="info" baslik="Roller ne yapabilir?">
             <ul className="mb-0 ps-3">
               <li>

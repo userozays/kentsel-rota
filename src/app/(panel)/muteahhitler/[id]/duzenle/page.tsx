@@ -21,7 +21,7 @@ export default async function MuteahhitDuzenleSayfasi({ params }: { params: Prom
     <>
       <SayfaBasligi ustBaslik={muteahhit.kod} baslik={muteahhit.firmaAdi} />
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <MuteahhitFormu muteahhit={muteahhit} />
         </div>
       </div>

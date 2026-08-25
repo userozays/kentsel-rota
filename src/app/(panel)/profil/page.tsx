@@ -25,7 +25,7 @@ export default async function ProfilSayfasi() {
       <SayfaBasligi ustBaslik="Hesap" baslik="Profilim" />
 
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <div className="row row-cards">
             <div className="col-lg-4">
               <div className="card">

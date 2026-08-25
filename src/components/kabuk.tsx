@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   IconBriefcase,
   IconBuildingCommunity,
@@ -38,14 +38,13 @@ function aktifMi(yol: string, mevcut: string, tam?: boolean) {
   return mevcut === yol || mevcut.startsWith(yol + "/");
 }
 
-/* ------------------------------------------------------------- Tema düğmesi */
+/* --------------------------------------------- Tema düğmesi (kenar çubuğu altı) */
 
-function TemaDugmesi() {
+function TemaSatiri() {
   const [tema, setTema] = useState<"light" | "dark">("light");
 
   useEffect(() => {
-    const mevcut = (document.documentElement.getAttribute("data-bs-theme") as "light" | "dark") ?? "light";
-    setTema(mevcut);
+    setTema((document.documentElement.getAttribute("data-bs-theme") as "light" | "dark") ?? "light");
   }, []);
 
   const degistir = () => {
@@ -60,65 +59,28 @@ function TemaDugmesi() {
   };
 
   return (
-    <button
-      type="button"
-      onClick={degistir}
-      className="nav-link px-0 btn btn-ghost-secondary border-0"
-      title={tema === "dark" ? "Aydınlık temaya geç" : "Karanlık temaya geç"}
-      aria-label="Tema değiştir"
-    >
-      {tema === "dark" ? <IconSun size={20} stroke={1.5} /> : <IconMoon size={20} stroke={1.5} />}
+    <button type="button" className="krp-kenar-dugme" onClick={degistir} aria-label="Tema değiştir">
+      <span className="nav-link-icon">
+        {tema === "dark" ? <IconSun size={20} stroke={1.5} /> : <IconMoon size={20} stroke={1.5} />}
+      </span>
+      <span>{tema === "dark" ? "Aydınlık tema" : "Karanlık tema"}</span>
     </button>
   );
 }
 
-/* ------------------------------------------------------------ Kullanıcı menüsü */
+/* --------------------------------------------- Giriş yapan kişi (üst çubuk sağ) */
 
-function KullaniciMenusu({ oturum }: { oturum: Oturum }) {
-  const [acik, setAcik] = useState(false);
-  const kutu = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const disariTiklama = (e: MouseEvent) => {
-      if (kutu.current && !kutu.current.contains(e.target as Node)) setAcik(false);
-    };
-    document.addEventListener("mousedown", disariTiklama);
-    return () => document.removeEventListener("mousedown", disariTiklama);
-  }, []);
-
+function KullaniciBloku({ oturum, kompakt = false }: { oturum: Oturum; kompakt?: boolean }) {
   const rol = ROL[oturum.rol];
-
   return (
-    <div className="nav-item dropdown" ref={kutu}>
-      <button
-        type="button"
-        className="nav-link d-flex lh-1 p-0 px-2 border-0 bg-transparent"
-        onClick={() => setAcik((a) => !a)}
-        aria-expanded={acik}
-      >
-        <span className={`avatar avatar-sm bg-${avatarRengi(oturum.email)}-lt`}>{basHarfler(oturum.ad)}</span>
-        <div className="d-none d-xl-block ps-2 text-start">
+    <div className="d-flex align-items-center lh-1">
+      <span className={`avatar avatar-sm bg-${avatarRengi(oturum.email)}-lt`}>{basHarfler(oturum.ad)}</span>
+      {!kompakt && (
+        <div className="d-none d-xl-block ps-2">
           <div>{oturum.ad}</div>
           <div className="mt-1 small text-secondary">{rol?.etiket ?? oturum.rol}</div>
         </div>
-      </button>
-      <div className={`dropdown-menu dropdown-menu-end dropdown-menu-arrow${acik ? " show" : ""}`}>
-        <div className="dropdown-header d-xl-none">
-          <div>{oturum.ad}</div>
-          <div className="small text-secondary">{oturum.email}</div>
-        </div>
-        <Link href="/profil" className="dropdown-item" onClick={() => setAcik(false)}>
-          <IconUserCircle size={18} stroke={1.5} className="me-2" />
-          Profilim
-        </Link>
-        <div className="dropdown-divider" />
-        <form action="/api/cikis" method="post">
-          <button type="submit" className="dropdown-item text-red">
-            <IconLogout size={18} stroke={1.5} className="me-2" />
-            Çıkış Yap
-          </button>
-        </form>
-      </div>
+      )}
     </div>
   );
 }
@@ -156,8 +118,11 @@ export function Kabuk({ oturum, children }: { oturum: Oturum; children: React.Re
             </Link>
           </div>
 
-          <div className="navbar-nav flex-row d-lg-none">
-            <KullaniciMenusu oturum={oturum} />
+          {/* Mobilde üst çubuk gizli olduğu için giriş yapan kişi burada görünür */}
+          <div className="d-lg-none">
+            <Link href="/profil" className="text-reset" title="Profilim">
+              <KullaniciBloku oturum={oturum} kompakt />
+            </Link>
           </div>
 
           <div className={`collapse navbar-collapse${menuAcik ? " show" : ""}`}>
@@ -177,17 +142,36 @@ export function Kabuk({ oturum, children }: { oturum: Oturum; children: React.Re
                 );
               })}
             </ul>
+
+            {/* Kenar çubuğunun altı: tema ve çıkış.
+                Tabler'da .navbar-nav flex-grow:1 taşıdığı için bu blok kendiliğinden en alta oturur. */}
+            <div className="krp-kenar-alt">
+              <TemaSatiri />
+              <form action="/api/cikis" method="post">
+                <button type="submit" className="krp-kenar-dugme krp-kenar-cikis">
+                  <span className="nav-link-icon">
+                    <IconLogout size={20} stroke={1.5} />
+                  </span>
+                  <span>Çıkış Yap</span>
+                </button>
+              </form>
+            </div>
           </div>
         </div>
       </aside>
 
       <header className="navbar navbar-expand-md d-none d-lg-flex d-print-none">
-        <div className="container-xl">
-          <div className="navbar-nav flex-row order-md-last">
-            <div className="d-none d-md-flex align-items-center me-2">
-              <TemaDugmesi />
-            </div>
-            <KullaniciMenusu oturum={oturum} />
+        <div className="container-fluid">
+          <div className="navbar-nav flex-row order-md-last align-items-center gap-2">
+            <Link
+              href="/profil"
+              className={`btn btn-sm${yol === "/profil" ? " active" : ""}`}
+              title="Profil bilgilerim ve şifre değiştirme"
+            >
+              <IconUserCircle size={18} stroke={1.5} className="me-1" />
+              Profilim
+            </Link>
+            <KullaniciBloku oturum={oturum} />
           </div>
 
           <div className="me-3 flex-fill" style={{ maxWidth: "26rem" }}>
@@ -199,7 +183,7 @@ export function Kabuk({ oturum, children }: { oturum: Oturum; children: React.Re
       <div className="page-wrapper">
         {children}
         <footer className="footer footer-transparent d-print-none">
-          <div className="container-xl">
+          <div className="container-fluid">
             <div className="row text-center align-items-center flex-row-reverse">
               <div className="col-12 col-lg-auto mt-3 mt-lg-0">
                 <span className="text-secondary small">Kentsel Rota Panel</span>

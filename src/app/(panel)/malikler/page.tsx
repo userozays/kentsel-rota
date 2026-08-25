@@ -102,7 +102,7 @@ export default async function MaliklerSayfasi({
       {modalAcik && <MalikModali malik={duzenlenecek ?? undefined} />}
 
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <div className="card mb-3">
             <div className="card-body">
               <form method="get" className="row g-2 align-items-end">

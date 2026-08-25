@@ -16,7 +16,7 @@ export default async function YeniMuteahhitSayfasi() {
     <>
       <SayfaBasligi ustBaslik="Muteahhitler" baslik="Yeni Muteahhit" />
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <MuteahhitFormu />
         </div>
       </div>

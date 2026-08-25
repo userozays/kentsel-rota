@@ -100,7 +100,7 @@ export default async function PanelAnasayfa() {
       />
 
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           {/* ------------------------------------------------- Özet kartları */}
           <div className="row row-deck row-cards mb-3">
             <div className="col-sm-6 col-lg-3">

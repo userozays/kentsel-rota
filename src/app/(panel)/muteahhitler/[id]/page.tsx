@@ -122,7 +122,7 @@ export default async function MuteahhitDetaySayfasi({
       {duzenlenebilir && p.duzenle === muteahhit.id && <MuteahhitModali muteahhit={muteahhit} />}
 
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           {muteahhit.durum === "KARA_LISTE" && (
             <Uyari tur="danger" baslik="Bu firma kara listede">
               {muteahhit.notlar ?? "Firma ile çalışılmaması yönünde karar alınmış."}

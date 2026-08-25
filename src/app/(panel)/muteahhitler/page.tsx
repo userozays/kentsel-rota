@@ -91,7 +91,7 @@ export default async function MuteahhitlerSayfasi({
       {modalAcik && <MuteahhitModali muteahhit={duzenlenecek ?? undefined} />}
 
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <div className="row row-deck row-cards mb-3">
             <div className="col-sm-6 col-lg-3">
               <IstatistikKart baslik="Toplam firma" deger={sayi(tumu.length)} renk="primary" />

@@ -16,7 +16,7 @@ export default async function YeniMalikSayfasi() {
     <>
       <SayfaBasligi ustBaslik="Malikler" baslik="Yeni Malik" />
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <div className="row justify-content-center">
             <div className="col-lg-9">
               <MalikFormu />

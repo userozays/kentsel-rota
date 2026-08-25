@@ -21,7 +21,7 @@ export default async function MalikDuzenleSayfasi({ params }: { params: Promise<
     <>
       <SayfaBasligi ustBaslik="Malikler" baslik={malik.adSoyad} />
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <div className="row justify-content-center">
             <div className="col-lg-9">
               <MalikFormu malik={malik} />

@@ -62,7 +62,7 @@ export function SayfaBasligi({
 }) {
   return (
     <div className="page-header d-print-none">
-      <div className="container-xl">
+      <div className="container-fluid">
         <div className="row g-2 align-items-center">
           <div className="col">
             {ustBaslik && <div className="page-pretitle">{ustBaslik}</div>}

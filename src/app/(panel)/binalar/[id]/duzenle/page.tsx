@@ -33,7 +33,7 @@ export default async function BinaDuzenleSayfasi({ params }: { params: Promise<{
     <>
       <SayfaBasligi ustBaslik={bina.kod} baslik={bina.baslik} />
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <BinaFormu bina={bina} danismanlar={danismanlar} muteahhitler={muteahhitler} />
         </div>
       </div>

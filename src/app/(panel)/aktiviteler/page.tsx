@@ -54,7 +54,7 @@ export default async function AktivitelerSayfasi({
       <SayfaBasligi ustBaslik="Operasyon" baslik="Aktiviteler" aciklama={`${sayi(toplam)} kayıt`} />
 
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <div className="card mb-3">
             <div className="card-body">
               <form method="get" className="row g-2 align-items-end">

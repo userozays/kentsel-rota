@@ -249,7 +249,7 @@ export default async function TakvimSayfasi({
       )}
 
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <div className="card">
             <div className="card-header">
               <h3 className="card-title">{baslikMetni(gorunum, referans)}</h3>

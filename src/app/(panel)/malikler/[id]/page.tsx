@@ -118,7 +118,7 @@ export default async function MalikDetaySayfasi({
       {duzenlenebilir && p.duzenle === malik.id && <MalikModali malik={malik} />}
 
       <div className="page-body">
-        <div className="container-xl">
+        <div className="container-fluid">
           <div className="row row-cards">
             <div className="col-lg-4">
               <div className="card mb-3">
