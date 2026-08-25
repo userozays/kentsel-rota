@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { IconClock, IconEdit, IconMail, IconMapPin, IconPhone } from "@tabler/icons-react";
+import { IconClock, IconEdit, IconMail, IconMapPin, IconPhone, IconTrash } from "@tabler/icons-react";
 import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
 import {
@@ -20,7 +20,9 @@ import {
   Rozet,
   SayfaBasligi,
 } from "@/components/ortak";
-import { AktiviteFormu, SilDugmesi } from "../../binalar/[id]/etkilesim";
+import { AktiviteFormu } from "../../binalar/[id]/etkilesim";
+import { SilOnayi } from "@/components/modal";
+import { MalikModali } from "../malik-modali";
 import { malikSil } from "../eylemler";
 
 export const dynamic = "force-dynamic";
@@ -74,16 +76,28 @@ export default async function MalikDetaySayfasi({ params }: { params: Promise<{ 
         aksiyonlar={
           duzenlenebilir ? (
             <>
-              <Link href={`/malikler/${malik.id}/duzenle`} className="btn btn-primary">
+              <Link href={`/malikler/${malik.id}?duzenle=${malik.id}`} scroll={false} className="btn btn-primary">
                 <IconEdit size={18} stroke={1.5} className="me-1" />
                 Düzenle
               </Link>
               {oturum.rol === "ADMIN" && (
-                <SilDugmesi
+                <SilOnayi
                   eylem={malikSil}
-                  id={malik.id}
-                  metin="Sil"
-                  onay={`${malik.adSoyad} kaydı ve tüm bina bağlantıları silinecek. Emin misiniz?`}
+                  alanlar={{ id: malik.id }}
+                  baslik="Malik kaydını sil"
+                  mesaj={
+                    <>
+                      <strong>{malik.adSoyad}</strong> kaydı ve bu kişinin {sayi(malik.hisseler.length)} bina
+                      bağlantısı kalıcı olarak silinecek.
+                      <div className="text-secondary small mt-2">Bu işlem geri alınamaz.</div>
+                    </>
+                  }
+                  tetikleyici={
+                    <>
+                      <IconTrash size={18} stroke={1.5} className="me-1" />
+                      Sil
+                    </>
+                  }
                 />
               )}
             </>

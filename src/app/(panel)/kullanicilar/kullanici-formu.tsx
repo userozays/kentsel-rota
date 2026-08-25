@@ -5,6 +5,7 @@ import { useActionState } from "react";
 import { IconAlertTriangle, IconDeviceFloppy } from "@tabler/icons-react";
 import { kullaniciKaydet, kullaniciDurumDegistir, kullaniciSil, type FormDurumu } from "./eylemler";
 import { ROLLER } from "@/lib/sabitler";
+import { SilOnayi } from "@/components/modal";
 
 type KullaniciVerisi = {
   id: string;
@@ -108,17 +109,21 @@ export function KullaniciFormu({ kullanici }: { kullanici?: KullaniciVerisi }) {
 
 export function KullaniciSilDugmesi({ id, ad }: { id: string; ad: string }) {
   return (
-    <form
-      action={kullaniciSil}
-      onSubmit={(e) => {
-        if (!confirm(`${ad} kullanıcısı silinecek. Emin misiniz?`)) e.preventDefault();
-      }}
-    >
-      <input type="hidden" name="id" value={id} />
-      <button type="submit" className="btn btn-ghost-danger">
-        Kullanıcıyı Sil
-      </button>
-    </form>
+    <SilOnayi
+      eylem={kullaniciSil}
+      alanlar={{ id }}
+      baslik="Kullanıcıyı sil"
+      mesaj={
+        <>
+          <strong>{ad}</strong> hesabı kalıcı olarak silinecek.
+          <div className="text-secondary small mt-2">
+            Bu kişinin girdiği görüşme ve not kayıtları da silinir. Kayıtları korumak isterseniz silmek
+            yerine hesabı pasife almayı tercih edin.
+          </div>
+        </>
+      }
+      tetikleyici="Kullanıcıyı Sil"
+    />
   );
 }
 

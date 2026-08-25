@@ -7,7 +7,7 @@ import { oturumGerekli } from "@/lib/oturum";
 import { yazabilir } from "@/lib/sabitler";
 import { bosaNull, formDegerleri } from "@/lib/yardimcilar";
 
-export type FormDurumu = { hata?: string; basarili?: boolean; degerler?: Record<string, string> };
+export type FormDurumu = { hata?: string; basarili?: boolean; kayitId?: string; degerler?: Record<string, string> };
 
 export async function malikKaydet(_onceki: FormDurumu, form: FormData): Promise<FormDurumu> {
   const oturum = await oturumGerekli();
@@ -34,7 +34,8 @@ export async function malikKaydet(_onceki: FormDurumu, form: FormData): Promise<
 
   revalidatePath("/malikler");
   revalidatePath(`/malikler/${malik.id}`);
-  redirect(`/malikler/${malik.id}`);
+  revalidatePath("/binalar");
+  return { basarili: true, kayitId: malik.id };
 }
 
 export async function malikSil(form: FormData) {

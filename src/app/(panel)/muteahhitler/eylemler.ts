@@ -7,7 +7,7 @@ import { oturumGerekli } from "@/lib/oturum";
 import { yazabilir } from "@/lib/sabitler";
 import { bosaNull, sayiyaCevir, formDegerleri } from "@/lib/yardimcilar";
 
-export type FormDurumu = { hata?: string; basarili?: boolean; degerler?: Record<string, string> };
+export type FormDurumu = { hata?: string; basarili?: boolean; kayitId?: string; degerler?: Record<string, string> };
 
 async function sonrakiKod() {
   const son = await db.muteahhit.findFirst({ orderBy: { kod: "desc" }, select: { kod: true } });
@@ -47,7 +47,8 @@ export async function muteahhitKaydet(_onceki: FormDurumu, form: FormData): Prom
 
   revalidatePath("/muteahhitler");
   revalidatePath(`/muteahhitler/${kayit.id}`);
-  redirect(`/muteahhitler/${kayit.id}`);
+  revalidatePath("/binalar");
+  return { basarili: true, kayitId: kayit.id };
 }
 
 export async function muteahhitSil(form: FormData) {

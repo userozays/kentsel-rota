@@ -7,7 +7,7 @@ import { oturumGerekli } from "@/lib/oturum";
 import { SUREC_SIRASI, yazabilir } from "@/lib/sabitler";
 import { bosaNull, sayiyaCevir, tariheCevir, formDegerleri } from "@/lib/yardimcilar";
 
-export type FormDurumu = { hata?: string; basarili?: boolean; degerler?: Record<string, string> };
+export type FormDurumu = { hata?: string; basarili?: boolean; kayitId?: string; degerler?: Record<string, string> };
 
 async function yetkiKontrol() {
   const oturum = await oturumGerekli();
@@ -104,9 +104,10 @@ export async function binaKaydet(_onceki: FormDurumu, form: FormData): Promise<F
   }
 
   revalidatePath("/binalar");
+  revalidatePath(`/binalar/${binaId}`);
   revalidatePath("/surec");
   revalidatePath("/");
-  redirect(`/binalar/${binaId}`);
+  return { basarili: true, kayitId: binaId };
 }
 
 /** Bina aşaması değişince süreç adımlarının durumunu hizalar */

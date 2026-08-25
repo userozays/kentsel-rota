@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IconFilter, IconMail, IconPhone, IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconEdit, IconFilter, IconMail, IconPhone, IconPlus, IconSearch } from "@tabler/icons-react";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
@@ -8,6 +8,7 @@ import { MALIK_TIPI, MALIK_TIPLERI, ONAY_DURUMLARI, ONAY_DURUMU, yazabilir } fro
 import { sayi } from "@/lib/yardimcilar";
 import { Avatar, BosDurum, Rozet, SayfaBasligi } from "@/components/ortak";
 import { Sayfalama } from "@/components/sayfalama";
+import { MalikModali } from "./malik-modali";
 
 export const metadata: Metadata = { title: "Malikler" };
 export const dynamic = "force-dynamic";
@@ -57,6 +58,19 @@ export default async function MaliklerSayfasi({
   ]);
 
   const filtreVar = Boolean(p.q || p.tip || p.onay || p.bina);
+  const duzenlenebilir = yazabilir(oturum.rol);
+
+  const modalAcik = duzenlenebilir && (p.yeni === "1" || Boolean(p.duzenle));
+  const duzenlenecek = modalAcik && p.duzenle ? await db.malik.findUnique({ where: { id: p.duzenle } }) : null;
+
+  const modalYolu = (ek: Record<string, string>) => {
+    const q = new URLSearchParams();
+    for (const [ad, deger] of Object.entries(p)) {
+      if (deger && ad !== "yeni" && ad !== "duzenle") q.set(ad, deger);
+    }
+    for (const [ad, deger] of Object.entries(ek)) q.set(ad, deger);
+    return `/malikler?${q.toString()}`;
+  };
 
   return (
     <>
@@ -65,14 +79,16 @@ export default async function MaliklerSayfasi({
         baslik="Malikler"
         aciklama={`${sayi(toplam)} kişi listeleniyor`}
         aksiyonlar={
-          yazabilir(oturum.rol) ? (
-            <Link href="/malikler/yeni" className="btn btn-primary">
+          duzenlenebilir ? (
+            <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
               <IconPlus size={18} stroke={1.5} className="me-1" />
               Yeni Malik
             </Link>
           ) : null
         }
       />
+
+      {modalAcik && <MalikModali malik={duzenlenecek ?? undefined} />}
 
       <div className="page-body">
         <div className="container-xl">
@@ -181,6 +197,7 @@ export default async function MaliklerSayfasi({
                         <th>İletişim</th>
                         <th>Bina / bağımsız bölüm</th>
                         <th>Onay durumu</th>
+                        {duzenlenebilir && <th style={{ width: "1%" }} />}
                       </tr>
                     </thead>
                     <tbody>
@@ -246,6 +263,19 @@ export default async function MaliklerSayfasi({
                               {m.hisseler.length === 0 && <span className="text-secondary">—</span>}
                             </div>
                           </td>
+                          {duzenlenebilir && (
+                            <td>
+                              <Link
+                                href={modalYolu({ duzenle: m.id })}
+                                scroll={false}
+                                className="btn btn-sm btn-icon"
+                                title="Düzenle"
+                                aria-label={`${m.adSoyad} kaydını düzenle`}
+                              >
+                                <IconEdit size={16} stroke={1.5} />
+                              </Link>
+                            </td>
+                          )}
                         </tr>
                       ))}
                     </tbody>

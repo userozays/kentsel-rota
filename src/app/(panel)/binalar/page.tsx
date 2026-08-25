@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IconFilter, IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconEdit, IconFilter, IconPlus, IconSearch } from "@tabler/icons-react";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
@@ -18,6 +18,7 @@ import {
 import { onayOzeti, sayi, tarih, yuzde } from "@/lib/yardimcilar";
 import { BosDurum, Rozet, SayfaBasligi } from "@/components/ortak";
 import { Sayfalama } from "@/components/sayfalama";
+import { BinaModali } from "./bina-modali";
 
 export const metadata: Metadata = { title: "Binalar" };
 export const dynamic = "force-dynamic";
@@ -73,6 +74,34 @@ export default async function BinalarSayfasi({
   ]);
 
   const filtreVar = Boolean(p.q || p.durum || p.risk || p.asama || p.ilce || p.danisman);
+  const duzenlenebilir = yazabilir(oturum.rol);
+
+  /* --- Modal: adres çubuğundaki ?yeni / ?duzenle parametrelerine göre açılır --- */
+  const modalAcik = duzenlenebilir && (p.yeni === "1" || Boolean(p.duzenle));
+  const [duzenlenecek, formDanismanlari, formMuteahhitleri] = modalAcik
+    ? await Promise.all([
+        p.duzenle ? db.bina.findUnique({ where: { id: p.duzenle } }) : Promise.resolve(null),
+        db.kullanici.findMany({
+          where: { aktif: true, rol: { in: ["ADMIN", "DANISMAN"] } },
+          select: { id: true, ad: true },
+          orderBy: { ad: "asc" },
+        }),
+        db.muteahhit.findMany({
+          select: { id: true, firmaAdi: true, durum: true },
+          orderBy: [{ durum: "asc" }, { firmaAdi: "asc" }],
+        }),
+      ])
+    : [null, [], []];
+
+  /** Aktif filtreleri koruyarak modal bağlantısı üretir */
+  const modalYolu = (ek: Record<string, string>) => {
+    const q = new URLSearchParams();
+    for (const [ad, deger] of Object.entries(p)) {
+      if (deger && ad !== "yeni" && ad !== "duzenle") q.set(ad, deger);
+    }
+    for (const [ad, deger] of Object.entries(ek)) q.set(ad, deger);
+    return `/binalar?${q.toString()}`;
+  };
 
   return (
     <>
@@ -81,14 +110,22 @@ export default async function BinalarSayfasi({
         baslik="Binalar"
         aciklama={`${sayi(toplam)} dosya listeleniyor`}
         aksiyonlar={
-          yazabilir(oturum.rol) ? (
-            <Link href="/binalar/yeni" className="btn btn-primary">
+          duzenlenebilir ? (
+            <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
               <IconPlus size={18} stroke={1.5} className="me-1" />
               Yeni Bina Dosyası
             </Link>
           ) : null
         }
       />
+
+      {modalAcik && (
+        <BinaModali
+          bina={duzenlenecek ?? undefined}
+          danismanlar={formDanismanlari}
+          muteahhitler={formMuteahhitleri}
+        />
+      )}
 
       <div className="page-body">
         <div className="container-xl">
@@ -218,8 +255,8 @@ export default async function BinalarSayfasi({
                       <Link href="/binalar" className="btn btn-primary">
                         Filtreyi temizle
                       </Link>
-                    ) : yazabilir(oturum.rol) ? (
-                      <Link href="/binalar/yeni" className="btn btn-primary">
+                    ) : duzenlenebilir ? (
+                      <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
                         Yeni Bina Dosyası
                       </Link>
                     ) : null
@@ -241,6 +278,7 @@ export default async function BinalarSayfasi({
                         <th>Müteahhit</th>
                         <th>Danışman</th>
                         <th>Durum</th>
+                        {duzenlenebilir && <th style={{ width: "1%" }} />}
                       </tr>
                     </thead>
                     <tbody>
@@ -300,6 +338,19 @@ export default async function BinalarSayfasi({
                               <Rozet harita={BINA_DURUMU} deger={b.durum} />
                               <div className="text-secondary small mt-1">{tarih(b.guncellemeTarihi)}</div>
                             </td>
+                            {duzenlenebilir && (
+                              <td>
+                                <Link
+                                  href={modalYolu({ duzenle: b.id })}
+                                  scroll={false}
+                                  className="btn btn-sm btn-icon"
+                                  title="Düzenle"
+                                  aria-label={`${b.baslik} dosyasını düzenle`}
+                                >
+                                  <IconEdit size={16} stroke={1.5} />
+                                </Link>
+                              </td>
+                            )}
                           </tr>
                         );
                       })}

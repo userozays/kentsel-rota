@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
-import { useActionState } from "react";
-import { IconAlertTriangle, IconDeviceFloppy } from "@tabler/icons-react";
+import { useActionState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { malikKaydet, type FormDurumu } from "./eylemler";
 import { MALIK_TIPLERI } from "@/lib/sabitler";
+import { FormDugmeleri, FormGovdesi, FormHatasi, FormSarmalayici } from "@/components/form-kabugu";
 
 type MalikVerisi = {
   id: string;
@@ -18,23 +18,35 @@ type MalikVerisi = {
   notlar: string | null;
 };
 
-export function MalikFormu({ malik }: { malik?: MalikVerisi }) {
+export function MalikFormu({
+  malik,
+  modalIcinde = false,
+  onBasarili,
+  onIptal,
+}: {
+  malik?: MalikVerisi;
+  modalIcinde?: boolean;
+  onBasarili?: (id: string) => void;
+  onIptal?: () => void;
+}) {
   const [durum, eylem, bekliyor] = useActionState<FormDurumu, FormData>(malikKaydet, {});
   const girilen = durum.degerler ?? {};
+  const router = useRouter();
+
+  useEffect(() => {
+    if (!durum.basarili || !durum.kayitId) return;
+    if (onBasarili) onBasarili(durum.kayitId);
+    else router.push(`/malikler/${durum.kayitId}`);
+  }, [durum, onBasarili, router]);
 
   return (
-    <form action={eylem}>
-      {malik && <input type="hidden" name="id" value={malik.id} />}
+    <FormSarmalayici modalIcinde={modalIcinde}>
+      <form action={eylem}>
+        {malik && <input type="hidden" name="id" value={malik.id} />}
 
-      {durum.hata && (
-        <div className="alert alert-danger d-flex align-items-center gap-2" role="alert">
-          <IconAlertTriangle size={20} stroke={1.5} />
-          <div>{durum.hata}</div>
-        </div>
-      )}
+        <FormGovdesi modalIcinde={modalIcinde}>
+          <FormHatasi hata={durum.hata} />
 
-      <div className="card">
-        <div className="card-body">
           <div className="row g-3">
             <div className="col-md-8">
               <label className="form-label required" htmlFor="adSoyad">
@@ -94,20 +106,16 @@ export function MalikFormu({ malik }: { malik?: MalikVerisi }) {
               <textarea id="notlar" name="notlar" rows={4} className="form-control" defaultValue={girilen.notlar ?? malik?.notlar ?? ""} />
             </div>
           </div>
-        </div>
+        </FormGovdesi>
 
-        <div className="card-footer">
-          <div className="btn-list justify-content-end">
-            <Link href={malik ? `/malikler/${malik.id}` : "/malikler"} className="btn">
-              Vazgeç
-            </Link>
-            <button type="submit" className="btn btn-primary" disabled={bekliyor}>
-              <IconDeviceFloppy size={18} stroke={1.5} className="me-1" />
-              {bekliyor ? "Kaydediliyor…" : malik ? "Kaydet" : "Malik Oluştur"}
-            </button>
-          </div>
-        </div>
-      </div>
-    </form>
+        <FormDugmeleri
+          modalIcinde={modalIcinde}
+          bekliyor={bekliyor}
+          kaydetMetni={malik ? "Kaydet" : "Malik Oluştur"}
+          iptalYolu={malik ? `/malikler/${malik.id}` : "/malikler"}
+          onIptal={onIptal}
+        />
+      </form>
+    </FormSarmalayici>
   );
 }

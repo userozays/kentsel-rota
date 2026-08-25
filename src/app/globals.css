@@ -9,6 +9,92 @@ body {
   font-feature-settings: "cv03", "cv04", "cv11";
 }
 
+/* --------------------------------------------------------------------- Modal
+   Kabuk olarak native <dialog> kullanılıyor; Tabler'ın .modal-dialog /
+   .modal-content sınıfları içeride duruyor. Buradaki kurallar tarayıcının
+   dialog varsayılanlarını (dar genişlik, çerçeve, iç boşluk) sıfırlar. */
+
+/* .modal sınıfı display:none getirir; dialog kabuğunda görünür olmalı.
+   Seçici özgüllüğü .modal'dan yüksek olduğu için bu kural kazanır. */
+dialog.modal.krp-modal {
+  display: block;
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  padding: 0;
+  border: 0;
+  /* kaydırmayı .modal-dialog-scrollable içindeki .modal-body üstlenir;
+     dialog kabuğu kaydırırsa alt düğme çubuğu ekran dışında kalıyor */
+  overflow: hidden;
+  background: transparent;
+  color: var(--tblr-body-color);
+}
+
+/* dialog kapalıyken tarayıcı zaten gizler; display:block bunu bozmasın */
+dialog.modal.krp-modal:not([open]) {
+  display: none;
+}
+
+/* Formlar .modal-body ve .modal-footer'ı kendileri veriyor. Araya giren <form>
+   etiketi .modal-content'in flex zincirini kestiği için gövde kaymıyor ve alt
+   düğme çubuğu ekranın dışında kalıyordu; form da zincire dahil ediliyor. */
+dialog.modal.krp-modal .modal-content > form {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  overflow: hidden;
+}
+
+dialog.modal.krp-modal .modal-content > form > .modal-body {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+}
+
+dialog.modal.krp-modal .modal-content > form > .modal-footer {
+  flex: 0 0 auto;
+}
+
+dialog.modal.krp-modal::backdrop {
+  background-color: #182433;
+  opacity: 0.36;
+}
+
+:root[data-bs-theme="dark"] dialog.modal.krp-modal::backdrop {
+  opacity: 0.6;
+}
+
+dialog.modal.krp-modal[open] {
+  animation: krp-modal-gir 0.16s ease-out;
+}
+
+dialog.modal.krp-modal[open]::backdrop {
+  animation: krp-backdrop-gir 0.16s ease-out;
+}
+
+@keyframes krp-modal-gir {
+  from {
+    opacity: 0;
+    transform: translateY(-0.75rem);
+  }
+}
+
+@keyframes krp-backdrop-gir {
+  from {
+    opacity: 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.modal.krp-modal[open],
+  dialog.modal.krp-modal[open]::backdrop {
+    animation: none;
+  }
+}
+
 /* Tıklanabilir tablo satırları */
 .tablo-satir-link {
   cursor: pointer;

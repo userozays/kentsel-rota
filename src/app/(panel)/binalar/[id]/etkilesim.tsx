@@ -2,6 +2,7 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import { IconCheck, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
+import { SilOnayi } from "@/components/modal";
 import {
   ADIM_DURUMLARI,
   KULLANIM_TURLERI,
@@ -60,19 +61,24 @@ export function OnayDegistirici({
 
 export function HisseSilDugmesi({ hisseId, malikAdi }: { hisseId: string; malikAdi: string }) {
   return (
-    <form
-      action={hisseSil}
-      onSubmit={(e) => {
-        if (!confirm(`${malikAdi} bu binadan çıkarılsın mı? Malik kaydı silinmez, sadece bu bina ile bağlantısı kaldırılır.`)) {
-          e.preventDefault();
-        }
-      }}
-    >
-      <input type="hidden" name="hisseId" value={hisseId} />
-      <button type="submit" className="btn btn-ghost-danger btn-icon btn-sm" title="Binadan çıkar">
-        <IconTrash size={16} stroke={1.5} />
-      </button>
-    </form>
+    <SilOnayi
+      eylem={hisseSil}
+      alanlar={{ hisseId }}
+      baslik="Maliki binadan çıkar"
+      mesaj={
+        <>
+          <strong>{malikAdi}</strong> bu binadan çıkarılacak.
+          <div className="text-secondary small mt-2">
+            Malik kaydının kendisi silinmez; yalnızca bu bina ile bağlantısı ve bağımsız bölüm bilgisi kaldırılır.
+            Binanın onay oranı yeniden hesaplanır.
+          </div>
+        </>
+      }
+      onayMetni="Çıkar"
+      tetikleyici={<IconTrash size={16} stroke={1.5} />}
+      tetikleyiciSinif="btn btn-ghost-danger btn-icon btn-sm"
+      tetikleyiciBaslik="Binadan çıkar"
+    />
   );
 }
 
@@ -342,34 +348,5 @@ export function MalikEkleFormu({
         </div>
       </form>
     </div>
-  );
-}
-
-/* ------------------------------------------------------------- Silme düğmesi */
-
-export function SilDugmesi({
-  eylem,
-  id,
-  metin,
-  onay,
-}: {
-  eylem: (form: FormData) => Promise<void>;
-  id: string;
-  metin: string;
-  onay: string;
-}) {
-  return (
-    <form
-      action={eylem}
-      onSubmit={(e) => {
-        if (!confirm(onay)) e.preventDefault();
-      }}
-    >
-      <input type="hidden" name="id" value={id} />
-      <button type="submit" className="btn btn-ghost-danger">
-        <IconTrash size={18} stroke={1.5} className="me-1" />
-        {metin}
-      </button>
-    </form>
   );
 }

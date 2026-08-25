@@ -1,12 +1,13 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IconExternalLink, IconFilter, IconMail, IconPhone, IconPlus, IconSearch } from "@tabler/icons-react";
+import { IconEdit, IconExternalLink, IconFilter, IconMail, IconPhone, IconPlus, IconSearch } from "@tabler/icons-react";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
 import { MUTEAHHIT_DURUMLARI, MUTEAHHIT_DURUMU, yazabilir } from "@/lib/sabitler";
 import { sayi } from "@/lib/yardimcilar";
 import { Avatar, BosDurum, IstatistikKart, Rozet, SayfaBasligi, YildizPuan } from "@/components/ortak";
+import { MuteahhitModali } from "./muteahhit-modali";
 
 export const metadata: Metadata = { title: "Müteahhitler" };
 export const dynamic = "force-dynamic";
@@ -46,6 +47,20 @@ export default async function MuteahhitlerSayfasi({
   ]);
 
   const filtreVar = Boolean(p.q || p.durum || p.puan);
+  const duzenlenebilir = yazabilir(oturum.rol);
+
+  const modalAcik = duzenlenebilir && (p.yeni === "1" || Boolean(p.duzenle));
+  const duzenlenecek =
+    modalAcik && p.duzenle ? await db.muteahhit.findUnique({ where: { id: p.duzenle } }) : null;
+
+  const modalYolu = (ek: Record<string, string>) => {
+    const q = new URLSearchParams();
+    for (const [ad, deger] of Object.entries(p)) {
+      if (deger && ad !== "yeni" && ad !== "duzenle") q.set(ad, deger);
+    }
+    for (const [ad, deger] of Object.entries(ek)) q.set(ad, deger);
+    return `/muteahhitler?${q.toString()}`;
+  };
 
   return (
     <>
@@ -54,14 +69,16 @@ export default async function MuteahhitlerSayfasi({
         baslik="Müteahhitler"
         aciklama={`${sayi(muteahhitler.length)} firma listeleniyor`}
         aksiyonlar={
-          yazabilir(oturum.rol) ? (
-            <Link href="/muteahhitler/yeni" className="btn btn-primary">
+          duzenlenebilir ? (
+            <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
               <IconPlus size={18} stroke={1.5} className="me-1" />
               Yeni Müteahhit
             </Link>
           ) : null
         }
       />
+
+      {modalAcik && <MuteahhitModali muteahhit={duzenlenecek ?? undefined} />}
 
       <div className="page-body">
         <div className="container-xl">
@@ -167,8 +184,8 @@ export default async function MuteahhitlerSayfasi({
                       <Link href="/muteahhitler" className="btn btn-primary">
                         Filtreyi temizle
                       </Link>
-                    ) : yazabilir(oturum.rol) ? (
-                      <Link href="/muteahhitler/yeni" className="btn btn-primary">
+                    ) : duzenlenebilir ? (
+                      <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
                         Yeni Müteahhit
                       </Link>
                     ) : null
@@ -193,7 +210,20 @@ export default async function MuteahhitlerSayfasi({
                             {m.yetkiliKisi ? ` · ${m.yetkiliKisi}` : ""}
                           </div>
                         </div>
-                        <Rozet harita={MUTEAHHIT_DURUMU} deger={m.durum} />
+                        <div className="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+                          <Rozet harita={MUTEAHHIT_DURUMU} deger={m.durum} />
+                          {duzenlenebilir && (
+                            <Link
+                              href={modalYolu({ duzenle: m.id })}
+                              scroll={false}
+                              className="btn btn-sm btn-icon"
+                              title="Düzenle"
+                              aria-label={`${m.firmaAdi} kaydını düzenle`}
+                            >
+                              <IconEdit size={16} stroke={1.5} />
+                            </Link>
+                          )}
+                        </div>
                       </div>
 
                       <div className="mb-3">

@@ -9,6 +9,7 @@ import {
   IconMail,
   IconMapPin,
   IconPhone,
+  IconTrash,
 } from "@tabler/icons-react";
 import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
@@ -23,7 +24,9 @@ import {
   Uyari,
   YildizPuan,
 } from "@/components/ortak";
-import { AktiviteFormu, SilDugmesi } from "../../binalar/[id]/etkilesim";
+import { AktiviteFormu } from "../../binalar/[id]/etkilesim";
+import { SilOnayi } from "@/components/modal";
+import { MuteahhitModali } from "../muteahhit-modali";
 import { muteahhitSil } from "../eylemler";
 
 export const dynamic = "force-dynamic";
@@ -76,16 +79,29 @@ export default async function MuteahhitDetaySayfasi({ params }: { params: Promis
         aksiyonlar={
           duzenlenebilir ? (
             <>
-              <Link href={`/muteahhitler/${muteahhit.id}/duzenle`} className="btn btn-primary">
+              <Link href={`/muteahhitler/${muteahhit.id}?duzenle=${muteahhit.id}`} scroll={false} className="btn btn-primary">
                 <IconEdit size={18} stroke={1.5} className="me-1" />
                 Düzenle
               </Link>
               {oturum.rol === "ADMIN" && (
-                <SilDugmesi
+                <SilOnayi
                   eylem={muteahhitSil}
-                  id={muteahhit.id}
-                  metin="Sil"
-                  onay={`${muteahhit.firmaAdi} kaydı silinecek. Bağlı bina dosyalarındaki müteahhit ataması kaldırılır. Emin misiniz?`}
+                  alanlar={{ id: muteahhit.id }}
+                  baslik="Müteahhit kaydını sil"
+                  mesaj={
+                    <>
+                      <strong>{muteahhit.firmaAdi}</strong> kaydı silinecek. Bu firmaya atanmış{" "}
+                      {sayi(muteahhit.binalar.length)} bina dosyasındaki müteahhit ataması kaldırılır,
+                      dosyalar silinmez.
+                      <div className="text-secondary small mt-2">Bu işlem geri alınamaz.</div>
+                    </>
+                  }
+                  tetikleyici={
+                    <>
+                      <IconTrash size={18} stroke={1.5} className="me-1" />
+                      Sil
+                    </>
+                  }
                 />
               )}
             </>

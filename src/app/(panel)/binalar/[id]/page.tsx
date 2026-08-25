@@ -11,6 +11,7 @@ import {
   IconMapPin,
   IconPhone,
   IconProgress,
+  IconTrash,
   IconX,
 } from "@tabler/icons-react";
 import { db } from "@/lib/db";
@@ -39,13 +40,14 @@ import {
   YildizPuan,
 } from "@/components/ortak";
 import { binaSil } from "../eylemler";
+import { BinaModali } from "../bina-modali";
+import { SilOnayi } from "@/components/modal";
 import {
   AdimDegistirici,
   AktiviteFormu,
   HisseSilDugmesi,
   MalikEkleFormu,
   OnayDegistirici,
-  SilDugmesi,
 } from "./etkilesim";
 
 export const dynamic = "force-dynamic";
@@ -63,9 +65,16 @@ const ADIM_IKONLARI: Record<string, React.ReactNode> = {
   BEKLIYOR: null,
 };
 
-export default async function BinaDetaySayfasi({ params }: { params: Promise<{ id: string }> }) {
+export default async function BinaDetaySayfasi({
+  params,
+  searchParams,
+}: {
+  params: Promise<{ id: string }>;
+  searchParams: Promise<Record<string, string | undefined>>;
+}) {
   const oturum = await oturumGerekli();
   const { id } = await params;
+  const p = await searchParams;
 
   const bina = await db.bina.findUnique({
     where: { id },
@@ -94,6 +103,21 @@ export default async function BinaDetaySayfasi({ params }: { params: Promise<{ i
   const ozet = onayOzeti(bina.hisseler);
   const ilerleme = asamaYuzdesi(bina.asama);
 
+  const modalAcik = duzenlenebilir && p.duzenle === bina.id;
+  const [formDanismanlari, formMuteahhitleri] = modalAcik
+    ? await Promise.all([
+        db.kullanici.findMany({
+          where: { aktif: true, rol: { in: ["ADMIN", "DANISMAN"] } },
+          select: { id: true, ad: true },
+          orderBy: { ad: "asc" },
+        }),
+        db.muteahhit.findMany({
+          select: { id: true, firmaAdi: true, durum: true },
+          orderBy: [{ durum: "asc" }, { firmaAdi: "asc" }],
+        }),
+      ])
+    : [[], []];
+
   const kayitliMalikler = await db.malik.findMany({
     where: { hisseler: { none: { binaId: bina.id } } },
     select: { id: true, adSoyad: true, telefon: true },
@@ -117,16 +141,28 @@ export default async function BinaDetaySayfasi({ params }: { params: Promise<{ i
         aksiyonlar={
           duzenlenebilir ? (
             <>
-              <Link href={`/binalar/${bina.id}/duzenle`} className="btn btn-primary">
+              <Link href={`/binalar/${bina.id}?duzenle=${bina.id}`} scroll={false} className="btn btn-primary">
                 <IconEdit size={18} stroke={1.5} className="me-1" />
                 Düzenle
               </Link>
               {oturum.rol === "ADMIN" && (
-                <SilDugmesi
+                <SilOnayi
                   eylem={binaSil}
-                  id={bina.id}
-                  metin="Sil"
-                  onay={`"${bina.baslik}" dosyası ve bağlı tüm hisse/süreç/aktivite kayıtları silinecek. Emin misiniz?`}
+                  alanlar={{ id: bina.id }}
+                  baslik="Bina dosyasını sil"
+                  mesaj={
+                    <>
+                      <strong>{bina.baslik}</strong> dosyası; bağlı {sayi(bina.hisseler.length)} malik kaydı,
+                      süreç adımları ve görüşme notlarıyla birlikte kalıcı olarak silinecek.
+                      <div className="text-secondary small mt-2">Bu işlem geri alınamaz.</div>
+                    </>
+                  }
+                  tetikleyici={
+                    <>
+                      <IconTrash size={18} stroke={1.5} className="me-1" />
+                      Sil
+                    </>
+                  }
                 />
               )}
             </>
@@ -136,6 +172,10 @@ export default async function BinaDetaySayfasi({ params }: { params: Promise<{ i
 
       <div className="page-body">
         <div className="container-xl">
+          {modalAcik && (
+            <BinaModali bina={bina} danismanlar={formDanismanlari} muteahhitler={formMuteahhitleri} />
+          )}
+
           {ozet.bolumSayisi === 0 && (
             <Uyari tur="warning" baslik="Bu binada kayıtlı malik yok">
               Onay oranı hesaplanabilmesi için bağımsız bölüm ve malik kayıtlarını ekleyin.
