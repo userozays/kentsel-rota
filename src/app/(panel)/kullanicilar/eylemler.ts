@@ -4,7 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import bcrypt from "bcryptjs";
 import { db } from "@/lib/db";
-import { oturumAl, oturumBaslat, yoneticiGerekli, oturumGerekli } from "@/lib/oturum";
+import { gecerliOturum, oturumBaslat, yoneticiGerekli, oturumGerekli } from "@/lib/oturum";
 import { bosaNull, formDegerleri } from "@/lib/yardimcilar";
 
 export type FormDurumu = { hata?: string; basarili?: string; degerler?: Record<string, string> };
@@ -12,7 +12,7 @@ export type FormDurumu = { hata?: string; basarili?: string; degerler?: Record<s
 const EN_AZ_SIFRE = 8;
 
 export async function kullaniciKaydet(_onceki: FormDurumu, form: FormData): Promise<FormDurumu> {
-  const oturum = await oturumAl();
+  const oturum = await gecerliOturum();
   if (!oturum || oturum.rol !== "ADMIN") return { hata: "Bu işlem için yönetici yetkisi gerekir.", degerler: formDegerleri(form) };
 
   const id = bosaNull(form.get("id"));

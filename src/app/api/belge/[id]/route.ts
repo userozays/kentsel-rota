@@ -1,7 +1,7 @@
 import { readFile } from "node:fs/promises";
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { oturumAl } from "@/lib/oturum";
+import { gecerliOturum } from "@/lib/oturum";
 import { tamYolCoz } from "@/lib/belge";
 
 export const dynamic = "force-dynamic";
@@ -12,10 +12,13 @@ export const runtime = "nodejs";
  * ve her istekte oturum doğrulanır.
  */
 export async function GET(istek: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const oturum = await oturumAl();
+  const oturum = await gecerliOturum();
   if (!oturum) {
-    // Tarayıcıdan doğrudan açıldıysa giriş sayfasına yönlendir
-    return NextResponse.redirect(new URL("/giris", istek.url));
+    /* Tarayıcıdan doğrudan açıldıysa çıkışa yönlendir. `/giris` değil:
+       çerez imzası geçerli olduğu sürece middleware kullanıcıyı panele geri
+       atar, arada bir tur zıplama olur. Çıkış rotası çerezi düşürüp giriş
+       ekranına götürür. */
+    return NextResponse.redirect(new URL("/api/cikis", istek.url));
   }
 
   const { id } = await params;

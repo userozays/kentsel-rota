@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { oturumAl } from "@/lib/oturum";
+import { gecerliOturum } from "@/lib/oturum";
 import { KULLANIM_TURU, ONAY_DURUMU, RISK_DURUMU, SUREC_ADIMI, etiketBul } from "@/lib/sabitler";
 import { onayOzeti } from "@/lib/yardimcilar";
 import { csvUret, csvYaniti, dosyaAdiUret } from "@/lib/disa-aktar";
@@ -9,8 +9,11 @@ export const dynamic = "force-dynamic";
 
 /** Bir binanın malik + arsa payı + onay çizelgesi. Toplantı ve imza takibi için. */
 export async function GET(istek: NextRequest, { params }: { params: Promise<{ id: string }> }) {
-  const oturum = await oturumAl();
-  if (!oturum) return NextResponse.redirect(new URL("/giris", istek.url));
+  const oturum = await gecerliOturum();
+  // Cerez imzasi gecerli ama hesap artik gecerli degilse: /giris yerine
+  // /api/cikis, cunku cerez durdugu surece middleware kullaniciyi panele
+  // geri atar. Cikis rotasi cerezi dusurup giris ekranina goturur.
+  if (!oturum) return NextResponse.redirect(new URL("/api/cikis", istek.url));
 
   const { id } = await params;
   const bina = await db.bina.findUnique({

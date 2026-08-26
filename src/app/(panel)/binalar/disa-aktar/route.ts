@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { oturumAl } from "@/lib/oturum";
+import { gecerliOturum } from "@/lib/oturum";
 import { aramaKelimeleri } from "@/lib/arama";
 import { BINA_DURUMU, ONCELIK, RISK_DURUMU, SUREC_ADIMI, etiketBul } from "@/lib/sabitler";
 import { onayOzeti } from "@/lib/yardimcilar";
@@ -11,8 +11,11 @@ export const dynamic = "force-dynamic";
 
 /** Bina listesi — liste sayfasındaki filtreler querystring ile aynen taşınır */
 export async function GET(istek: NextRequest) {
-  const oturum = await oturumAl();
-  if (!oturum) return NextResponse.redirect(new URL("/giris", istek.url));
+  const oturum = await gecerliOturum();
+  // Cerez imzasi gecerli ama hesap artik gecerli degilse: /giris yerine
+  // /api/cikis, cunku cerez durdugu surece middleware kullaniciyi panele
+  // geri atar. Cikis rotasi cerezi dusurup giris ekranina goturur.
+  if (!oturum) return NextResponse.redirect(new URL("/api/cikis", istek.url));
 
   const p = istek.nextUrl.searchParams;
   const kosullar: Prisma.BinaWhereInput[] = [];

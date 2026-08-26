@@ -1,6 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { db } from "@/lib/db";
-import { oturumAl } from "@/lib/oturum";
+import { gecerliOturum } from "@/lib/oturum";
 import { aramaKelimeleri } from "@/lib/arama";
 import { BINA_DURUMU, MUTEAHHIT_DURUMU, SUREC_ADIMI, etiketBul } from "@/lib/sabitler";
 import { sayi, yuzde, onayOzeti } from "@/lib/yardimcilar";
@@ -34,7 +34,7 @@ export type AramaYaniti = {
 };
 
 export async function GET(istek: NextRequest) {
-  const oturum = await oturumAl();
+  const oturum = await gecerliOturum();
   if (!oturum) {
     return NextResponse.json({ hata: "Oturum gerekli" }, { status: 401 });
   }

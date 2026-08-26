@@ -1861,6 +1861,41 @@ a.krp-olay:hover {
   --tblr-btn-font-size: 0.875rem;
 }
 
+/* ------------------------------------------- 12c  Durum sayfaları (404, hata) */
+
+.krp-durum-sayfasi {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  min-height: 100dvh;
+  padding: 2rem 1.5rem;
+  background: var(--krp-zemin);
+}
+
+.krp-durum-kutu {
+  width: 100%;
+  max-width: 26rem;
+  padding: 2rem;
+  text-align: center;
+  background: var(--krp-yuzey);
+  border: 1px solid var(--krp-cizgi);
+  border-radius: 14px;
+}
+
+.krp-durum-baslik {
+  font-family: var(--krp-font-baslik), var(--tblr-font-sans-serif);
+  font-size: 1.375rem;
+  font-weight: 600;
+  letter-spacing: -0.03em;
+  color: var(--krp-murekkep);
+  margin: 0 0 0.5rem;
+}
+
+.krp-durum-kutu .btn-list {
+  margin-top: 1.5rem;
+}
+
 /* ------------------------------- 13  Boş durumlar, listeler, uyarılar */
 
 .empty {

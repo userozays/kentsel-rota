@@ -408,6 +408,58 @@ yerde `tabular-nums` ile hizalanır, yoksa oranlar alt alta kayıyor.
 
 ---
 
+## Güvenlik
+
+**Oturum doğrulama.** `middleware.ts` yalnızca JWT imzasını doğrulayabiliyor — Prisma
+middleware çalışma ortamında yok. İmza 7 gün geçerli olduğu için tek başına yeterli değil:
+pasife alınan ya da silinen kullanıcı elindeki çerezle 7 gün daha girebilirdi. Doğrulama
+`gecerliOturum()` içinde tek noktaya alındı (`src/lib/oturum.ts`):
+
+- Kullanıcı hâlâ var mı ve `aktif` mi, her istekte veritabanından denetlenir
+- **Rol de veritabanından okunur.** Çerezdeki rol token üretildiği andan kalma; yöneticiliği
+  alınan biri, çerezi yenilenmediği sürece eski yetkisiyle çalışmaya devam ederdi. Yetki
+  düşürme artık anında etkili.
+- Geçersiz oturum `/api/cikis`'e yönlendirilir; çerez düşürülüp `/giris?sebep=oturum`
+  ekranına gidilir. Doğrudan `/giris`'e yönlendirmek işe yaramıyor — middleware imzası
+  geçerli çerezi görüp kullanıcıyı panele geri atar, sonsuz gidiş geliş olur.
+
+Maliyeti istek başına birincil anahtar üzerinden tek satır okuma.
+
+Uzun ömürlü SSE akışı (`/api/canli`) her kalp atışında (25 sn) hesabın aktifliğini yeniden
+denetler ve pasife alınmışsa bağlantıyı kapatır; yalnızca bağlanırken doğrulasaydık
+kullanıcı sekmesini kapatana kadar bildirim almaya devam ederdi.
+
+`/api/cikis` GET'i yalnızca oturum **gerçekten geçersizse** çerezi siler. Aksi halde dış bir
+sitenin `<img src=".../api/cikis">` koyarak kullanıcıyı oturumdan atması mümkün olurdu.
+
+**Giriş denemesi sınırlaması.** `src/lib/giris-limiti.ts`: 5 başarısız denemeden sonra kilit,
+üst üste kilitlerde süre artar (1 → 5 → 15 → 60 dk). Sayaç hem e-posta hem IP için tutulur —
+yalnızca e-posta olsa saldırgan hesaplar arasında dolaşır, yalnızca IP olsa ortak çıkışlı bir
+ofis tek kişinin hatası yüzünden kilitlenir. Sayaçlar süreç belleğinde, **tek instance şart**
+(canlı güncellemedeki kuralın aynısı). Nginx arkasında gerçek IP `x-forwarded-for`'dan okunur.
+
+**Güvenlik başlıkları** `next.config.mjs` içinde: `X-Frame-Options: DENY` +
+`CSP frame-ancestors 'none'` (clickjacking), `X-Content-Type-Options: nosniff` (yüklenen
+belgeler için önemli), `Referrer-Policy: strict-origin-when-cross-origin` (bina/malik
+kimlikleri adreste geçiyor, dışarı sızmasın), `Permissions-Policy`. `poweredByHeader` kapalı.
+
+> **HSTS bilinçli olarak yok.** Sertifika kurulmadan gönderilirse tarayıcı alan adını HTTPS'e
+> kilitler ve panel erişilemez hale gelir. SSL çalıştığı doğrulandıktan sonra **nginx
+> tarafında** eklenmeli:
+> ```nginx
+> add_header Strict-Transport-Security "max-age=31536000; includeSubDomains" always;
+> ```
+
+### Canlıya çıkmadan kontrol listesi
+
+- [ ] `.env` içinde `AUTH_SECRET` yeni ve rastgele (`node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"`)
+- [ ] `npm run db:temizle` ile demo veri silindi, kendi yönetici hesabı açıldı
+- [ ] SSL kuruldu (`certbot`) — oturum çerezi üretimde `secure` işaretli, HTTPS olmadan giriş yapılamaz
+- [ ] Nginx'e HSTS başlığı eklendi
+- [ ] `/api/canli` için `proxy_buffering off` (yoksa canlı güncelleme takılır)
+- [ ] PM2 **tek instance** (`-i max` kullanılmadı)
+- [ ] Yedekleme kurulu: `prisma/veritabani.db` + `veri/belgeler/`
+
 ## Notlar
 
 - Tabler CSS `@tabler/core` paketinden gelir; **Bootstrap JS kullanılmaz**. Modallar native

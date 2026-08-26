@@ -21,6 +21,7 @@ export function CanliTazele({ gostergeGoster = true }: { gostergeGoster?: boolea
     let yenidenDene: ReturnType<typeof setTimeout> | null = null;
     let deneme = 0;
     let kapandi = false;
+    let koptu = false; // en az bir kez bağlantı düştü mü
 
     const tazele = () => {
       if (document.hidden) {
@@ -37,10 +38,21 @@ export function CanliTazele({ gostergeGoster = true }: { gostergeGoster?: boolea
       kaynak.onopen = () => {
         deneme = 0;
         setBagli(true);
+        /* Kopan bağlantı sırasında yayınlanan olaylar bir daha gelmiyor:
+           sunucu geçmişi tutmuyor, SSE yeniden bağlanınca sıfırdan dinliyor.
+           Eskiden burada yalnızca gösterge yeşile dönüyordu; ekranda bayat
+           veri kalıyor, üstelik "Canlı" yazdığı için kullanıcı güncel
+           sandığı bir ekrana bakıyordu. Yeniden bağlanışta bir kez tazeleyip
+           kaçırılanı kapatıyoruz. */
+        if (koptu) {
+          koptu = false;
+          tazele();
+        }
       };
       kaynak.addEventListener("degisiklik", tazele);
       kaynak.onerror = () => {
         setBagli(false);
+        koptu = true; // yeniden bağlanınca tazelenmesi gerektiğini işaretle
         kaynak?.close();
         if (kapandi) return;
         deneme = Math.min(deneme + 1, 6);

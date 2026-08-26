@@ -1,6 +1,7 @@
 import type { NextRequest } from "next/server";
-import { oturumAl } from "@/lib/oturum";
+import { gecerliOturum } from "@/lib/oturum";
 import { canliDinle } from "@/lib/canli";
+import { db } from "@/lib/db";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -9,7 +10,7 @@ export const runtime = "nodejs";
 const KALP_ATISI_MS = 25000;
 
 export async function GET(istek: NextRequest) {
-  const oturum = await oturumAl();
+  const oturum = await gecerliOturum();
   if (!oturum) return new Response("Oturum gerekli", { status: 401 });
 
   const kodlayici = new TextEncoder();
@@ -30,10 +31,10 @@ export async function GET(istek: NextRequest) {
         gonder(`event: degisiklik\ndata: ${JSON.stringify({ tur: olayTuru })}\n\n`);
       });
 
-      const kalp = setInterval(() => gonder(": kalp\n\n"), KALP_ATISI_MS);
+      let kalp: ReturnType<typeof setInterval> | undefined;
 
       const kapat = () => {
-        clearInterval(kalp);
+        if (kalp) clearInterval(kalp);
         birak();
         try {
           kontrolcu.close();
@@ -41,6 +42,34 @@ export async function GET(istek: NextRequest) {
           /* zaten kapalı */
         }
       };
+
+      /* Kalp atışı hem bağlantıyı canlı tutuyor hem hesabın hâlâ aktif
+         olduğunu denetliyor. Akış uzun ömürlü: yalnızca bağlanırken
+         doğrulasaydık, sonradan pasife alınan kullanıcı sekmesini kapatana
+         kadar değişiklik bildirimlerini almaya devam ederdi.
+
+         Burada `gecerliOturum()` değil doğrudan veritabanı kullanılıyor:
+         o işlev çerez okuyor, çerezler ise istek kapsamına bağlı ve bu geri
+         çağrı yanıt başladıktan dakikalar sonra çalışıyor. */
+      kalp = setInterval(() => {
+        void (async () => {
+          try {
+            const k = await db.kullanici.findUnique({
+              where: { id: oturum.id },
+              select: { aktif: true },
+            });
+            if (!k?.aktif) {
+              kapat();
+              return;
+            }
+            gonder(": kalp\n\n");
+          } catch {
+            /* veritabanı geçici olarak erişilemezse bağlantıyı düşürmüyoruz;
+               bir sonraki atışta yeniden denenir */
+            gonder(": kalp\n\n");
+          }
+        })();
+      }, KALP_ATISI_MS);
 
       istek.signal.addEventListener("abort", kapat);
     },

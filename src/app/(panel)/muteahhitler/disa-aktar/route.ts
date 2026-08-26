@@ -1,7 +1,7 @@
 import { NextResponse, type NextRequest } from "next/server";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
-import { oturumAl } from "@/lib/oturum";
+import { gecerliOturum } from "@/lib/oturum";
 import { aramaKelimeleri } from "@/lib/arama";
 import { MUTEAHHIT_DURUMU, etiketBul } from "@/lib/sabitler";
 import { csvUret, csvYaniti, dosyaAdiUret } from "@/lib/disa-aktar";
@@ -9,8 +9,11 @@ import { csvUret, csvYaniti, dosyaAdiUret } from "@/lib/disa-aktar";
 export const dynamic = "force-dynamic";
 
 export async function GET(istek: NextRequest) {
-  const oturum = await oturumAl();
-  if (!oturum) return NextResponse.redirect(new URL("/giris", istek.url));
+  const oturum = await gecerliOturum();
+  // Cerez imzasi gecerli ama hesap artik gecerli degilse: /giris yerine
+  // /api/cikis, cunku cerez durdugu surece middleware kullaniciyi panele
+  // geri atar. Cikis rotasi cerezi dusurup giris ekranina goturur.
+  if (!oturum) return NextResponse.redirect(new URL("/api/cikis", istek.url));
 
   const p = istek.nextUrl.searchParams;
   const kosullar: Prisma.MuteahhitWhereInput[] = [];

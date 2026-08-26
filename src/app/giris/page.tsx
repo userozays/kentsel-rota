@@ -31,9 +31,9 @@ const OZETLER = [
 export default async function GirisSayfasi({
   searchParams,
 }: {
-  searchParams: Promise<{ devam?: string }>;
+  searchParams: Promise<{ devam?: string; sebep?: string }>;
 }) {
-  const { devam } = await searchParams;
+  const { devam, sebep } = await searchParams;
 
   return (
     <div className="krp-giris">
@@ -99,6 +99,13 @@ export default async function GirisSayfasi({
             <div className="page-pretitle">Panele erişim</div>
             <h2 className="krp-giris-baslik">Hesabınıza giriş yapın</h2>
           </div>
+
+          {/* Oturum geçersiz kaldığı için çıkarıldıysa sebebini söyle */}
+          {sebep === "oturum" && (
+            <div className="alert alert-warning" role="status">
+              Oturumunuz sona erdi ya da hesabınız artık geçerli değil. Tekrar giriş yapın.
+            </div>
+          )}
 
           <GirisFormu devam={devam ?? "/"} />
 
