@@ -13,13 +13,15 @@ import { useCallback, useEffect, useId, useRef, useState, type ReactNode } from 
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { IconAlertTriangle } from "@tabler/icons-react";
 
-export type ModalBoyutu = "sm" | "orta" | "lg" | "xl";
+export type ModalBoyutu = "sm" | "orta" | "lg" | "xl" | "genis";
 
 const BOYUT_SINIFI: Record<ModalBoyutu, string> = {
   sm: "modal-sm",
   orta: "",
   lg: "modal-lg",
   xl: "modal-xl",
+  // Profil modalları detay sayfasının tamamını taşıyor; xl bile dar kalıyordu
+  genis: "krp-modal-genis",
 };
 
 export function Modal({
@@ -129,8 +131,11 @@ export function Modal({
 
 /* ------------------------------------------------------------ URL'e bağlı modal */
 
+/** Modalı açan adres parametreleri; kapatılırken hepsi temizlenir. */
+const MODAL_PARAMETRELERI = ["yeni", "duzenle", "profil"];
+
 /**
- * Modalı kapatırken adresten ?yeni / ?duzenle parametrelerini temizler, diğer filtreleri korur.
+ * Modalı kapatırken adresten modal parametrelerini temizler, diğer filtreleri korur.
  *
  * tazele=true verildiğinde ayrıca router.refresh() çağrılır. Kayıt sonrasında bu gerekli:
  * sunucu eylemi revalidatePath ile önbelleği düşürse de, istemci taraf route önbelleği
@@ -144,8 +149,7 @@ export function useModalKapat() {
   return useCallback(
     (tazele = false) => {
       const p = new URLSearchParams(parametreler.toString());
-      p.delete("yeni");
-      p.delete("duzenle");
+      for (const ad of MODAL_PARAMETRELERI) p.delete(ad);
       const q = p.toString();
       // replace: kapatınca geri tuşu modalı yeniden açmasın; doğrudan linkle gelinse bile uygulamada kalınır
       router.replace(q ? `${yol}?${q}` : yol, { scroll: false });

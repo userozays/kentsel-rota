@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { malikKaydet, type FormDurumu } from "./eylemler";
@@ -23,11 +24,15 @@ export function MalikFormu({
   modalIcinde = false,
   onBasarili,
   onIptal,
+  iptalMetni,
+  iptalIkonu,
 }: {
   malik?: MalikVerisi;
   modalIcinde?: boolean;
   onBasarili?: (id: string) => void;
   onIptal?: () => void;
+  iptalMetni?: string;
+  iptalIkonu?: ReactNode;
 }) {
   const [durum, eylem, bekliyor] = useActionState<FormDurumu, FormData>(malikKaydet, {});
   const girilen = durum.degerler ?? {};
@@ -114,6 +119,8 @@ export function MalikFormu({
           kaydetMetni={malik ? "Kaydet" : "Malik Oluştur"}
           iptalYolu={malik ? `/malikler/${malik.id}` : "/malikler"}
           onIptal={onIptal}
+          iptalMetni={iptalMetni}
+          iptalIkonu={iptalIkonu}
         />
       </form>
     </FormSarmalayici>

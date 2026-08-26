@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, type ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { muteahhitKaydet, type FormDurumu } from "./eylemler";
 import { MUTEAHHIT_DURUMLARI } from "@/lib/sabitler";
@@ -36,11 +36,15 @@ export function MuteahhitFormu({
   modalIcinde = false,
   onBasarili,
   onIptal,
+  iptalMetni,
+  iptalIkonu,
 }: {
   muteahhit?: MuteahhitVerisi;
   modalIcinde?: boolean;
   onBasarili?: (id: string) => void;
   onIptal?: () => void;
+  iptalMetni?: string;
+  iptalIkonu?: ReactNode;
 }) {
   const [durum, eylem, bekliyor] = useActionState<FormDurumu, FormData>(muteahhitKaydet, {});
   const girilen = durum.degerler ?? {};
@@ -199,6 +203,8 @@ export function MuteahhitFormu({
           kaydetMetni={muteahhit ? "Kaydet" : "Firmayı Ekle"}
           iptalYolu={muteahhit ? `/muteahhitler/${muteahhit.id}` : "/muteahhitler"}
           onIptal={onIptal}
+          iptalMetni={iptalMetni}
+          iptalIkonu={iptalIkonu}
         />
       </form>
     </FormSarmalayici>

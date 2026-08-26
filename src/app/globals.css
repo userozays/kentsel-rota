@@ -726,6 +726,13 @@ a.krp-kisi-cip[aria-current="page"] {
   min-width: 54rem;
 }
 
+/* Modal içindeki tablolar dar bir kolonda duruyor; yukarıdaki alt sınır
+   orada son sütunları ekranın dışına itiyordu (profil modalında Onay ve
+   Durum görünmüyordu). Modalda tablo mevcut genişliğe uyar. */
+.modal .table-responsive > .table {
+  min-width: 0;
+}
+
 /* Dar ve kısa içerikli hücreler kırılmasın */
 .table td .text-secondary.small,
 .table td .krp-mono {
@@ -735,6 +742,29 @@ a.krp-kisi-cip[aria-current="page"] {
 .table-vcenter td,
 .table-vcenter th {
   vertical-align: middle;
+}
+
+/* Tıklanabilir kartlar (müteahhit listesi)
+   Kartın tamamı profili açar; bunu .stretched-link ile kaplayan görünmez bir
+   katman sağlıyor. Kart tıklanabilir olduğunu üstüne gelince belli etsin. */
+.krp-kart-tiklanir {
+  transition: border-color 0.14s ease, background-color 0.14s ease;
+}
+
+.krp-kart-tiklanir:hover {
+  border-color: var(--krp-cizgi-koyu);
+  background: var(--krp-yuzey-2);
+}
+
+.krp-kart-tiklanir .stretched-link {
+  cursor: pointer;
+}
+
+/* Kaplayan katmanın (z-index:1) üstünde kalmalı, yoksa Ara/E-posta/Site/
+   Düzenle düğmeleri tıklanamaz olur. */
+.krp-kart-eylem {
+  position: relative;
+  z-index: 2;
 }
 
 /* Tıklanabilir satırlar */
@@ -1295,6 +1325,15 @@ dialog.modal.krp-modal .modal-content > form > .modal-footer {
   border-radius: 14px;
   background: var(--krp-yuzey);
   box-shadow: var(--krp-golge-modal);
+}
+
+/* Profil modalları detay sayfasının tamamını taşıyor. Tabler'ın en genişi
+   (modal-xl ≈ 1140 px) bile dar kalıyordu: bina profilindeki malik tablosu
+   yedi sütunla taşıp Onay sütununu ekranın dışına itiyordu. */
+@media (min-width: 992px) {
+  .modal-dialog.krp-modal-genis {
+    max-width: min(1600px, 94vw);
+  }
 }
 
 .modal-header {

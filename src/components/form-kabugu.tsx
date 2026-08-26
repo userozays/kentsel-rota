@@ -57,23 +57,30 @@ export function FormDugmeleri({
   kaydetMetni,
   iptalYolu,
   onIptal,
+  /** Profil modalından gelindiğinde "Vazgeç" yerine "Geri" yazar. */
+  iptalMetni = "Vazgeç",
+  iptalIkonu,
 }: {
   modalIcinde: boolean;
   bekliyor: boolean;
   kaydetMetni: string;
   iptalYolu: string;
   onIptal?: () => void;
+  iptalMetni?: string;
+  iptalIkonu?: ReactNode;
 }) {
   return (
     <div className={modalIcinde ? "modal-footer" : "card-footer"}>
       <div className="btn-list justify-content-end w-100">
         {onIptal ? (
           <button type="button" className="btn" onClick={onIptal} disabled={bekliyor}>
-            Vazgeç
+            {iptalIkonu}
+            {iptalMetni}
           </button>
         ) : (
           <Link href={iptalYolu} className="btn">
-            Vazgeç
+            {iptalIkonu}
+            {iptalMetni}
           </Link>
         )}
         <button type="submit" className="btn btn-primary" disabled={bekliyor}>

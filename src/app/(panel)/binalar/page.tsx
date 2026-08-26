@@ -21,6 +21,11 @@ import { aramaKelimeleri } from "@/lib/arama";
 import { BosDurum, Rozet, SayfaBasligi } from "@/components/ortak";
 import { Sayfalama } from "@/components/sayfalama";
 import { BinaModali } from "./bina-modali";
+import { BinaGovdesi } from "./bina-govdesi";
+import { binaDetayiGetir, binayaEklenebilirMalikler } from "./bina-verisi";
+import { ProfilModali } from "@/components/profil-modali";
+import { TiklanirSatir } from "@/components/tiklanir-satir";
+import { belgeleriGetir } from "@/lib/belge-listesi";
 
 export const metadata: Metadata = { title: "Binalar" };
 export const dynamic = "force-dynamic";
@@ -86,12 +91,23 @@ export default async function BinalarSayfasi({
       ])
     : [null, [], []];
 
+  /* Satıra tıklanınca açılan profil modalı: detay sayfasının gövdesinin
+     aynısını gösterir. `duzenle` varken açılmaz — o zaman düzenleme modalı
+     önceliklidir ve alt köşesindeki "Geri" buraya döner. */
+  const profil = p.profil && !modalAcik ? await binaDetayiGetir(p.profil) : null;
+  const [profilBelgeleri, profilMalikleri] = profil
+    ? await Promise.all([
+        belgeleriGetir({ binaId: profil.id }, oturum),
+        binayaEklenebilirMalikler(profil.id),
+      ])
+    : [[], []];
+
   /** Aktif filtreleri koruyarak modal bağlantısı üretir */
   /** Ekrandaki filtreleri koruyarak CSV bağlantısı üretir */
   const disaAktarYolu = () => {
     const q = new URLSearchParams();
     for (const [ad, deger] of Object.entries(p)) {
-      if (deger && !["yeni", "duzenle", "sayfa"].includes(ad)) q.set(ad, deger);
+      if (deger && !["yeni", "duzenle", "profil", "sayfa"].includes(ad)) q.set(ad, deger);
     }
     const s = q.toString();
     return s ? "/binalar/disa-aktar?" + s : "/binalar/disa-aktar";
@@ -100,7 +116,7 @@ export default async function BinalarSayfasi({
   const modalYolu = (ek: Record<string, string>) => {
     const q = new URLSearchParams();
     for (const [ad, deger] of Object.entries(p)) {
-      if (deger && ad !== "yeni" && ad !== "duzenle") q.set(ad, deger);
+      if (deger && ad !== "yeni" && ad !== "duzenle" && ad !== "profil") q.set(ad, deger);
     }
     for (const [ad, deger] of Object.entries(ek)) q.set(ad, deger);
     return `/binalar?${q.toString()}`;
@@ -133,7 +149,32 @@ export default async function BinalarSayfasi({
           bina={duzenlenecek ?? undefined}
           danismanlar={formDanismanlari}
           muteahhitler={formMuteahhitleri}
+          geriProfilId={p.profil && p.duzenle === p.profil ? p.profil : undefined}
         />
+      )}
+      {profil && (
+        <ProfilModali
+          kayitId={profil.id}
+          baslik={profil.baslik}
+          aciklama={
+            <span className="d-inline-flex flex-wrap align-items-center gap-2">
+              <span>
+                {profil.kod} · {profil.ilce} / {profil.il}
+              </span>
+              <Rozet harita={RISK_DURUMU} deger={profil.riskDurumu} />
+              <Rozet harita={BINA_DURUMU} deger={profil.durum} />
+              <Rozet harita={SUREC_ADIMI} deger={profil.asama} />
+            </span>
+          }
+          duzenlenebilir={duzenlenebilir}
+        >
+          <BinaGovdesi
+            bina={profil}
+            belgeler={profilBelgeleri}
+            kayitliMalikler={profilMalikleri}
+            duzenlenebilir={duzenlenebilir}
+          />
+        </ProfilModali>
       )}
 
       <div className="page-body">
@@ -287,7 +328,6 @@ export default async function BinalarSayfasi({
                         <th>Müteahhit</th>
                         <th>Danışman</th>
                         <th>Durum</th>
-                        {duzenlenebilir && <th style={{ width: "1%" }} />}
                       </tr>
                     </thead>
                     <tbody>
@@ -295,9 +335,15 @@ export default async function BinalarSayfasi({
                         const ozet = onayOzeti(b.hisseler);
                         const ilerleme = asamaYuzdesi(b.asama);
                         return (
-                          <tr key={b.id}>
+                          <TiklanirSatir key={b.id} yol={modalYolu({ profil: b.id })}>
                             <td>
-                              <Link href={`/binalar/${b.id}`} className="text-reset d-block fw-medium">
+                              {/* Satırın tamamı tıklanabilir; bu bağlantı
+                                  klavyeyle erişim için duruyor. */}
+                              <Link
+                                href={modalYolu({ profil: b.id })}
+                                scroll={false}
+                                className="text-reset d-block fw-medium"
+                              >
                                 {b.baslik}
                               </Link>
                               <div className="text-secondary small">
@@ -347,20 +393,7 @@ export default async function BinalarSayfasi({
                               <Rozet harita={BINA_DURUMU} deger={b.durum} />
                               <div className="text-secondary small mt-1">{tarih(b.guncellemeTarihi)}</div>
                             </td>
-                            {duzenlenebilir && (
-                              <td>
-                                <Link
-                                  href={modalYolu({ duzenle: b.id })}
-                                  scroll={false}
-                                  className="btn btn-sm btn-icon"
-                                  title="Düzenle"
-                                  aria-label={`${b.baslik} dosyasını düzenle`}
-                                >
-                                  <IconEdit size={18} stroke={1.6} />
-                                </Link>
-                              </td>
-                            )}
-                          </tr>
+                          </TiklanirSatir>
                         );
                       })}
                     </tbody>

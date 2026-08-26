@@ -11,6 +11,11 @@ import { aramaKelimeleri } from "@/lib/arama";
 import { Avatar, BosDurum, Rozet, SayfaBasligi } from "@/components/ortak";
 import { Sayfalama } from "@/components/sayfalama";
 import { MalikModali } from "./malik-modali";
+import { MalikGovdesi } from "./malik-govdesi";
+import { malikDetayiGetir } from "./malik-verisi";
+import { ProfilModali } from "@/components/profil-modali";
+import { TiklanirSatir } from "@/components/tiklanir-satir";
+import { belgeleriGetir } from "@/lib/belge-listesi";
 
 export const metadata: Metadata = { title: "Malikler" };
 export const dynamic = "force-dynamic";
@@ -55,14 +60,19 @@ export default async function MaliklerSayfasi({
   const filtreVar = Boolean(p.q || p.tip || p.onay || p.bina);
   const duzenlenebilir = yazabilir(oturum.rol);
 
+  /* Modal önceliği: duzenle varsa düzenleme, yoksa profil. profil adreste
+     kalırsa düzenleme modalındaki "Geri" oraya döner. */
   const modalAcik = duzenlenebilir && (p.yeni === "1" || Boolean(p.duzenle));
   const duzenlenecek = modalAcik && p.duzenle ? await db.malik.findUnique({ where: { id: p.duzenle } }) : null;
+
+  const profil = p.profil && !modalAcik ? await malikDetayiGetir(p.profil) : null;
+  const profilBelgeleri = profil ? await belgeleriGetir({ malikId: profil.id }, oturum) : [];
 
   /** Ekrandaki filtreleri koruyarak CSV bağlantısı üretir */
   const disaAktarYolu = () => {
     const q = new URLSearchParams();
     for (const [ad, deger] of Object.entries(p)) {
-      if (deger && !["yeni", "duzenle", "sayfa"].includes(ad)) q.set(ad, deger);
+      if (deger && !["yeni", "duzenle", "profil", "sayfa"].includes(ad)) q.set(ad, deger);
     }
     const s = q.toString();
     return s ? "/malikler/disa-aktar?" + s : "/malikler/disa-aktar";
@@ -71,7 +81,7 @@ export default async function MaliklerSayfasi({
   const modalYolu = (ek: Record<string, string>) => {
     const q = new URLSearchParams();
     for (const [ad, deger] of Object.entries(p)) {
-      if (deger && ad !== "yeni" && ad !== "duzenle") q.set(ad, deger);
+      if (deger && ad !== "yeni" && ad !== "duzenle" && ad !== "profil") q.set(ad, deger);
     }
     for (const [ad, deger] of Object.entries(ek)) q.set(ad, deger);
     return `/malikler?${q.toString()}`;
@@ -99,7 +109,22 @@ export default async function MaliklerSayfasi({
         }
       />
 
-      {modalAcik && <MalikModali malik={duzenlenecek ?? undefined} />}
+      {modalAcik && (
+        <MalikModali
+          malik={duzenlenecek ?? undefined}
+          geriProfilId={p.profil && p.duzenle === p.profil ? p.profil : undefined}
+        />
+      )}
+      {profil && (
+        <ProfilModali
+          kayitId={profil.id}
+          baslik={profil.adSoyad}
+          aciklama={<Rozet harita={MALIK_TIPI} deger={profil.tip} />}
+          duzenlenebilir={duzenlenebilir}
+        >
+          <MalikGovdesi malik={profil} belgeler={profilBelgeleri} duzenlenebilir={duzenlenebilir} kartsiz />
+        </ProfilModali>
+      )}
 
       <div className="page-body">
         <div className="container-fluid">
@@ -208,17 +233,22 @@ export default async function MaliklerSayfasi({
                         <th>İletişim</th>
                         <th>Bina / bağımsız bölüm</th>
                         <th>Onay durumu</th>
-                        {duzenlenebilir && <th style={{ width: "1%" }} />}
                       </tr>
                     </thead>
                     <tbody>
                       {malikler.map((m) => (
-                        <tr key={m.id}>
+                        <TiklanirSatir key={m.id} yol={modalYolu({ profil: m.id })}>
                           <td>
                             <div className="d-flex align-items-center gap-2">
                               <Avatar ad={m.adSoyad} anahtar={m.id} boyut="sm" />
                               <div>
-                                <Link href={`/malikler/${m.id}`} className="text-reset d-block fw-medium">
+                                {/* Satırın tamamı tıklanabilir; bu bağlantı
+                                    klavyeyle erişim için duruyor. */}
+                                <Link
+                                  href={modalYolu({ profil: m.id })}
+                                  scroll={false}
+                                  className="text-reset d-block fw-medium"
+                                >
                                   {m.adSoyad}
                                 </Link>
                                 <div className="text-secondary small">
@@ -274,20 +304,7 @@ export default async function MaliklerSayfasi({
                               {m.hisseler.length === 0 && <span className="text-secondary">—</span>}
                             </div>
                           </td>
-                          {duzenlenebilir && (
-                            <td>
-                              <Link
-                                href={modalYolu({ duzenle: m.id })}
-                                scroll={false}
-                                className="btn btn-sm btn-icon"
-                                title="Düzenle"
-                                aria-label={`${m.adSoyad} kaydını düzenle`}
-                              >
-                                <IconEdit size={18} stroke={1.6} />
-                              </Link>
-                            </td>
-                          )}
-                        </tr>
+                        </TiklanirSatir>
                       ))}
                     </tbody>
                   </table>

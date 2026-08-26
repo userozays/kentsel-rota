@@ -1,15 +1,26 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { IconDownload,
-  IconEdit, IconExternalLink, IconFilter, IconMail, IconPhone, IconPlus, IconSearch } from "@tabler/icons-react";
+import {
+  IconDownload,
+  IconExternalLink,
+  IconFilter,
+  IconMail,
+  IconPhone,
+  IconPlus,
+  IconSearch,
+} from "@tabler/icons-react";
 import type { Prisma } from "@prisma/client";
 import { db } from "@/lib/db";
 import { oturumGerekli } from "@/lib/oturum";
 import { MUTEAHHIT_DURUMLARI, MUTEAHHIT_DURUMU, yazabilir } from "@/lib/sabitler";
 import { sayi } from "@/lib/yardimcilar";
 import { aramaKelimeleri } from "@/lib/arama";
+import { belgeleriGetir } from "@/lib/belge-listesi";
 import { Avatar, BosDurum, IstatistikKart, Rozet, SayfaBasligi, YildizPuan } from "@/components/ortak";
 import { MuteahhitModali } from "./muteahhit-modali";
+import { MuteahhitGovdesi } from "./muteahhit-govdesi";
+import { muteahhitDetayiGetir } from "./muteahhit-verisi";
+import { ProfilModali } from "@/components/profil-modali";
 
 export const metadata: Metadata = { title: "Müteahhitler" };
 export const dynamic = "force-dynamic";
@@ -43,15 +54,22 @@ export default async function MuteahhitlerSayfasi({
   const filtreVar = Boolean(p.q || p.durum || p.puan);
   const duzenlenebilir = yazabilir(oturum.rol);
 
+  /* Modal önceliği: `duzenle` varsa düzenleme modalı açılır. `profil` de
+     adreste duruyorsa düzenleme modalındaki "Geri" oraya döner. */
   const modalAcik = duzenlenebilir && (p.yeni === "1" || Boolean(p.duzenle));
   const duzenlenecek =
     modalAcik && p.duzenle ? await db.muteahhit.findUnique({ where: { id: p.duzenle } }) : null;
+
+  /* Karta tıklanınca açılan profil modalı: detay sayfasının gövdesinin
+     aynısını gösterir. İzleyici rolü de görebilir. */
+  const profil = p.profil && !modalAcik ? await muteahhitDetayiGetir(p.profil) : null;
+  const profilBelgeleri = profil ? await belgeleriGetir({ muteahhitId: profil.id }, oturum) : [];
 
   /** Ekrandaki filtreleri koruyarak CSV bağlantısı üretir */
   const disaAktarYolu = () => {
     const q = new URLSearchParams();
     for (const [ad, deger] of Object.entries(p)) {
-      if (deger && !["yeni", "duzenle", "sayfa"].includes(ad)) q.set(ad, deger);
+      if (deger && !["yeni", "duzenle", "profil", "sayfa"].includes(ad)) q.set(ad, deger);
     }
     const s = q.toString();
     return s ? "/muteahhitler/disa-aktar?" + s : "/muteahhitler/disa-aktar";
@@ -60,7 +78,7 @@ export default async function MuteahhitlerSayfasi({
   const modalYolu = (ek: Record<string, string>) => {
     const q = new URLSearchParams();
     for (const [ad, deger] of Object.entries(p)) {
-      if (deger && ad !== "yeni" && ad !== "duzenle") q.set(ad, deger);
+      if (deger && ad !== "yeni" && ad !== "duzenle" && ad !== "profil") q.set(ad, deger);
     }
     for (const [ad, deger] of Object.entries(ek)) q.set(ad, deger);
     return `/muteahhitler?${q.toString()}`;
@@ -88,7 +106,33 @@ export default async function MuteahhitlerSayfasi({
         }
       />
 
-      {modalAcik && <MuteahhitModali muteahhit={duzenlenecek ?? undefined} />}
+      {modalAcik && (
+        <MuteahhitModali
+          muteahhit={duzenlenecek ?? undefined}
+          geriProfilId={p.profil && p.duzenle === p.profil ? p.profil : undefined}
+        />
+      )}
+      {profil && (
+        <ProfilModali
+          kayitId={profil.id}
+          baslik={profil.firmaAdi}
+          aciklama={
+            <span className="d-inline-flex flex-wrap align-items-center gap-2">
+              <span>{profil.kod}</span>
+              {profil.yetkiliKisi && <span>· {profil.yetkiliKisi}</span>}
+              <YildizPuan puan={profil.puan} />
+              <Rozet harita={MUTEAHHIT_DURUMU} deger={profil.durum} />
+            </span>
+          }
+          duzenlenebilir={duzenlenebilir}
+        >
+          <MuteahhitGovdesi
+            muteahhit={profil}
+            belgeler={profilBelgeleri}
+            duzenlenebilir={duzenlenebilir}
+          />
+        </ProfilModali>
+      )}
 
       <div className="page-body">
         <div className="container-fluid">
@@ -207,12 +251,19 @@ export default async function MuteahhitlerSayfasi({
             <div className="row row-cards">
               {muteahhitler.map((m) => (
                 <div key={m.id} className="col-md-6 col-xl-4">
-                  <div className={`card h-100${m.durum === "KARA_LISTE" ? " border-red" : ""}`}>
-                    <div className="card-body d-flex flex-column">
+                  <div className={`card h-100 krp-kart-tiklanir${m.durum === "KARA_LISTE" ? " border-red" : ""}`}>
+                    <div className="card-body d-flex flex-column position-relative">
                       <div className="d-flex align-items-start gap-2 mb-3">
                         <Avatar ad={m.firmaAdi} anahtar={m.kod} />
                         <div className="flex-fill min-w-0">
-                          <Link href={`/muteahhitler/${m.id}`} className="text-reset d-block fw-medium text-truncate">
+                          {/* stretched-link: kartın herhangi bir yerine tıklamak
+                              profili açar. Alttaki eylem düğmeleri .krp-kart-eylem
+                              ile bu katmanın üstünde kalır. */}
+                          <Link
+                            href={modalYolu({ profil: m.id })}
+                            scroll={false}
+                            className="text-reset d-block fw-medium text-truncate stretched-link"
+                          >
                             {m.firmaAdi}
                           </Link>
                           <div className="text-secondary small">
@@ -253,7 +304,7 @@ export default async function MuteahhitlerSayfasi({
                         </div>
                       )}
 
-                      <div className="mt-auto d-flex flex-wrap gap-2">
+                      <div className="mt-auto d-flex flex-wrap gap-2 krp-kart-eylem">
                         {m.telefon && (
                           <a href={`tel:${m.telefon.replace(/\s/g, "")}`} className="btn btn-sm">
                             <IconPhone size={15} stroke={1.5} className="me-1" />
@@ -272,20 +323,8 @@ export default async function MuteahhitlerSayfasi({
                             Site
                           </a>
                         )}
-                        {/* Düzenle, kartın üst köşesinden buraya taşındı: diğer
-                            eylemlerle aynı sırada duruyor. Yanındakiler etiketli
-                            olduğu için bu da etiketli. */}
-                        {duzenlenebilir && (
-                          <Link
-                            href={modalYolu({ duzenle: m.id })}
-                            scroll={false}
-                            className="btn btn-sm"
-                            aria-label={`${m.firmaAdi} kaydını düzenle`}
-                          >
-                            <IconEdit size={15} stroke={1.5} className="me-1" />
-                            Düzenle
-                          </Link>
-                        )}
+                        {/* Düzenle burada değil: kart profili açıyor, düzenleme
+                            profil modalının içinden yapılıyor. */}
                       </div>
                     </div>
                   </div>

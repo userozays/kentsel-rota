@@ -46,11 +46,58 @@ npm run dev            # http://localhost:3000
 - **Danışman** — bina/malik/müteahhit/randevu ekler ve düzenler, belge yükler; kayıt silemez.
 - **İzleyici** — sadece görüntüler ve dışa aktarır.
 
-### Ekle / düzenle akışı
+### Modal akışı
 
-"Yeni Ekle" ve "Düzenle" tam sayfaya gitmez, modal açar. Modal durumu adres çubuğunda
-tutulur (`?yeni=1`, `?duzenle=<id>`): geri tuşu modalı kapatır, sayfa yenilenince modal
-açık kalır, bağlantı paylaşılabilir ve ekrandaki filtreler korunur.
+"Yeni Ekle", "Düzenle" ve müteahhit profili tam sayfaya gitmez, modal açar. Modal durumu
+adres çubuğunda tutulur: geri tuşu modalı kapatır, sayfa yenilenince modal açık kalır,
+bağlantı paylaşılabilir ve ekrandaki filtreler korunur.
+
+| Parametre | Ne açar |
+|---|---|
+| `?yeni=1` | Yeni kayıt formu |
+| `?duzenle=<id>` | Düzenleme formu |
+| `?profil=<id>` | Kaydın profili (bina, malik, müteahhit) |
+
+Parametre listesi `src/components/modal.tsx` içindeki `MODAL_PARAMETRELERI` dizisinde;
+modal kapatılırken hepsi adresten temizlenir. Yeni bir modal türü eklerken bu diziye de
+eklemek gerekir, yoksa modal kapanmaz.
+
+### Profil modalları
+
+Bina, malik ve müteahhit listelerinde kayda tıklamak profili modal olarak açar.
+**Modal detay sayfasının tamamını taşır** — bina profilinde 16 adımlık süreç çizelgesi ve
+malik onay tablosu dahil; belge yükleme ve görüşme notu formları modal içinde çalışır.
+Kaydettikten sonra `?profil=<id>` adreste durduğu için `router.refresh()` modalı kapatmaz,
+yalnızca içeriği tazeler. İzleyici rolü de profilleri görebilir, yazma düğmeleri çıkmaz.
+
+**Tek kaynak.** Detay sayfası ile modal aynı bileşeni kullanır; iki kopya tutulsaydı biri
+güncellenip diğeri unutulurdu. Her varlık için bir sorgu ve bir gövde dosyası var:
+
+```
+binalar/bina-verisi.ts        bina-govdesi.tsx
+malikler/malik-verisi.ts      malik-govdesi.tsx
+muteahhitler/muteahhit-verisi.ts  muteahhit-govdesi.tsx
+```
+
+Gövdeler sunucu bileşenidir; modal kabuğuna (`components/profil-modali.tsx`, istemci)
+`children` olarak geçirilir. Bu sayede detay sayfası 518 → 126 satıra indi.
+
+**Tetikleyici.** Müteahhit kartlarında kartı kaplayan görünmez bir `.stretched-link`
+katmanı var; karttaki Ara / E-posta / Site düğmeleri `.krp-kart-eylem` ile bu katmanın
+üstünde durur, yoksa tıklanamaz olurlardı. Bina ve malik tablolarında satırın tamamı
+`components/tiklanir-satir.tsx` ile tıklanabilir — satır içindeki bağlantı, düğme ve form
+öğelerine yapılan tıklamalar hariç tutulur. Klavye erişimi satırdan değil, ad hücresindeki
+gerçek bağlantıdan sağlanır.
+
+**Düzenle → Geri akışı.** Profildeki "Düzenle" adrese `duzenle` parametresini ekler ama
+`profil` yerinde kalır. `duzenle` varken düzenleme modalı önceliklidir; `profil` de
+adreste olduğu için formun alt köşesindeki düğme "Vazgeç" yerine **"Geri"** olur ve
+profile döner. Kaydedildiğinde de profile dönülür, değişiklik hemen görünür. ESC / çarpı
+ikisini birden kapatır. Liste satırlarındaki düzenleme düğmeleri kaldırıldı — düzenleme
+profilin içinden yapılıyor.
+
+Profil modalları `boyut="genis"` kullanır (`max-width: min(1600px, 94vw)`); Tabler'ın en
+genişi `modal-xl` bile bina profilindeki yedi sütunlu malik tablosuna dar geliyordu.
 
 Eski `/yeni` ve `/[id]/duzenle` rotaları yer imi kırılmasın diye çalışmaya devam eder.
 

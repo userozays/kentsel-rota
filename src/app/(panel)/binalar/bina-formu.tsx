@@ -1,5 +1,6 @@
 "use client";
 
+import type { ReactNode } from "react";
 import { useActionState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { binaKaydet, type FormDurumu } from "./eylemler";
@@ -41,6 +42,8 @@ export function BinaFormu({
   modalIcinde = false,
   onBasarili,
   onIptal,
+  iptalMetni,
+  iptalIkonu,
 }: {
   bina?: BinaVerisi;
   danismanlar: { id: string; ad: string }[];
@@ -48,6 +51,8 @@ export function BinaFormu({
   modalIcinde?: boolean;
   onBasarili?: (id: string) => void;
   onIptal?: () => void;
+  iptalMetni?: string;
+  iptalIkonu?: ReactNode;
 }) {
   const [durum, eylem, bekliyor] = useActionState<FormDurumu, FormData>(binaKaydet, {});
   const girilen = durum.degerler ?? {};
@@ -260,6 +265,8 @@ export function BinaFormu({
           kaydetMetni={bina ? "Değişiklikleri Kaydet" : "Dosyayı Oluştur"}
           iptalYolu={bina ? `/binalar/${bina.id}` : "/binalar"}
           onIptal={onIptal}
+          iptalMetni={iptalMetni}
+          iptalIkonu={iptalIkonu}
         />
       </form>
     </FormSarmalayici>
