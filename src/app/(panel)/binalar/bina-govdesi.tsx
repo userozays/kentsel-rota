@@ -35,11 +35,13 @@ import {
   YildizPuan,
 } from "@/components/ortak";
 import { BelgelerKarti, type BelgeSatiri } from "@/components/belgeler-karti";
+import { DuzenleDugmesi } from "@/components/duzenle-dugmesi";
 import {
   AdimDegistirici,
   AktiviteFormu,
   HisseSilDugmesi,
   MalikEkleFormu,
+  MuteahhitAtayici,
   OnayDegistirici,
 } from "./[id]/etkilesim";
 import type { BinaDetayi } from "./bina-verisi";
@@ -63,11 +65,14 @@ export function BinaGovdesi({
   bina,
   belgeler,
   kayitliMalikler,
+  portfoyMuteahhitleri,
   duzenlenebilir,
 }: {
   bina: BinaDetayi;
   belgeler: BelgeSatiri[];
   kayitliMalikler: { id: string; adSoyad: string; telefon: string | null }[];
+  /** Müteahhit atama seçicisinin listesi */
+  portfoyMuteahhitleri: { id: string; firmaAdi: string; durum: string }[];
   duzenlenebilir: boolean;
 }) {
   const ozet = onayOzeti(bina.hisseler);
@@ -285,6 +290,13 @@ export function BinaGovdesi({
               <div className="card mb-3">
                 <div className="card-header">
                   <h3 className="card-title">Bina bilgileri</h3>
+                  {/* Düzenle bilginin yanında: en çok buradan ihtiyaç duyuluyor,
+                      modalın en altına inmek gerekmesin. */}
+                  {duzenlenebilir && (
+                    <div className="card-actions">
+                      <DuzenleDugmesi kayitId={bina.id} baslik="Bina dosyasını düzenle" />
+                    </div>
+                  )}
                 </div>
                 <div className="card-body">
                   <BilgiSatiri etiket="Dosya kodu">{bina.kod}</BilgiSatiri>
@@ -352,17 +364,26 @@ export function BinaGovdesi({
                       <BilgiSatiri etiket="Tamamlanan">{sayi(bina.muteahhit.tamamlananProje)} proje</BilgiSatiri>
                     </>
                   ) : (
-                    <BosDurum
-                      baslik="Müteahhit seçilmedi"
-                      aciklama="Dosyayı düzenleyerek portföyünüzden bir firma atayabilirsiniz."
-                      aksiyon={
-                        duzenlenebilir ? (
-                          <Link href={`/binalar/${bina.id}/duzenle`} className="btn btn-sm btn-primary">
-                            Müteahhit ata
-                          </Link>
-                        ) : null
-                      }
-                    />
+                    !duzenlenebilir && (
+                      <BosDurum
+                        baslik="Müteahhit seçilmedi"
+                        aciklama="Bu dosyaya henüz bir firma atanmamış."
+                      />
+                    )
+                  )}
+
+                  {/* Atamayı yerinde değiştir: en sık yapılan değişiklik olduğu
+                      için dosyanın tamamını düzenleme formundan geçirmek
+                      gerekmiyor. Seçim değişince kendiliğinden kaydedilir. */}
+                  {duzenlenebilir && (
+                    <div className={bina.muteahhit ? "mt-3 pt-3 border-top" : ""}>
+                      <div className="form-label">Atanan müteahhit</div>
+                      <MuteahhitAtayici
+                        binaId={bina.id}
+                        seciliId={bina.muteahhitId}
+                        muteahhitler={portfoyMuteahhitleri}
+                      />
+                    </div>
                   )}
                 </div>
               </div>

@@ -224,6 +224,61 @@ export async function hisseOnayGuncelle(form: FormData) {
   revalidatePath("/");
 }
 
+/**
+ * Bina dosyasına atanmış müteahhidi değiştirir.
+ *
+ * Bütün dosyayı düzenleme formundan geçirmeye gerek kalmadan, bina profilindeki
+ * Müteahhit kartından tek hamlede atama/değiştirme/kaldırma için. Boş değer
+ * atamayı kaldırır. Değişiklik SISTEM aktivitesi olarak iz bırakır — müteahhit
+ * ataması dosyanın seyrini etkileyen bir karar, kimin ne zaman değiştirdiği
+ * kayıtlı olmalı.
+ */
+export async function binaMuteahhitAta(form: FormData) {
+  const oturum = await yetkiKontrol();
+  const binaId = String(form.get("binaId") ?? "");
+  const secim = String(form.get("muteahhitId") ?? "");
+  if (!binaId) return;
+
+  const muteahhitId = secim || null;
+
+  const onceki = await db.bina.findUnique({
+    where: { id: binaId },
+    select: { muteahhitId: true, muteahhit: { select: { firmaAdi: true } } },
+  });
+  if (!onceki) return;
+  if (onceki.muteahhitId === muteahhitId) return; // değişiklik yok, iz de bırakma
+
+  const bina = await db.bina.update({
+    where: { id: binaId },
+    data: { muteahhitId },
+    include: { muteahhit: { select: { firmaAdi: true } } },
+  });
+
+  const eskiAd = onceki.muteahhit?.firmaAdi;
+  const yeniAd = bina.muteahhit?.firmaAdi;
+  const baslik = yeniAd
+    ? eskiAd
+      ? `Müteahhit değişti: ${eskiAd} → ${yeniAd}`
+      : `Müteahhit atandı: ${yeniAd}`
+    : `Müteahhit ataması kaldırıldı${eskiAd ? ` (${eskiAd})` : ""}`;
+
+  await db.aktivite.create({
+    data: {
+      tur: "SISTEM",
+      baslik,
+      kullaniciId: oturum.id,
+      binaId,
+      muteahhitId: muteahhitId ?? undefined,
+    },
+  });
+
+  revalidatePath(`/binalar/${binaId}`);
+  revalidatePath("/binalar");
+  revalidatePath("/muteahhitler");
+  revalidatePath("/");
+  canliYayinla("bina");
+}
+
 export async function hisseNotGuncelle(form: FormData) {
   await yetkiKontrol();
   const hisseId = String(form.get("hisseId") ?? "");

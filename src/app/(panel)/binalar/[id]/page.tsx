@@ -10,7 +10,11 @@ import { Rozet, RozetDolu, SayfaBasligi } from "@/components/ortak";
 import { SilOnayi } from "@/components/modal";
 import { belgeleriGetir } from "@/lib/belge-listesi";
 import { binaSil } from "../eylemler";
-import { binaDetayiGetir, binayaEklenebilirMalikler } from "../bina-verisi";
+import {
+  binaDetayiGetir,
+  binayaEklenebilirMalikler,
+  portfoyMuteahhitleriGetir,
+} from "../bina-verisi";
 import { BinaGovdesi } from "../bina-govdesi";
 import { BinaModali } from "../bina-modali";
 
@@ -55,7 +59,10 @@ export default async function BinaDetaySayfasi({
       ])
     : [[], []];
 
-  const kayitliMalikler = await binayaEklenebilirMalikler(bina.id);
+  const [kayitliMalikler, portfoyMuteahhitleri] = await Promise.all([
+    binayaEklenebilirMalikler(bina.id),
+    portfoyMuteahhitleriGetir(),
+  ]);
 
   return (
     <>
@@ -116,6 +123,7 @@ export default async function BinaDetaySayfasi({
             bina={bina}
             belgeler={belgeler}
             kayitliMalikler={kayitliMalikler}
+            portfoyMuteahhitleri={portfoyMuteahhitleri}
             duzenlenebilir={duzenlenebilir}
           />
         </div>

@@ -22,7 +22,11 @@ import { BosDurum, Rozet, SayfaBasligi } from "@/components/ortak";
 import { Sayfalama } from "@/components/sayfalama";
 import { BinaModali } from "./bina-modali";
 import { BinaGovdesi } from "./bina-govdesi";
-import { binaDetayiGetir, binayaEklenebilirMalikler } from "./bina-verisi";
+import {
+  binaDetayiGetir,
+  binayaEklenebilirMalikler,
+  portfoyMuteahhitleriGetir,
+} from "./bina-verisi";
 import { ProfilModali } from "@/components/profil-modali";
 import { TiklanirSatir } from "@/components/tiklanir-satir";
 import { belgeleriGetir } from "@/lib/belge-listesi";
@@ -95,12 +99,13 @@ export default async function BinalarSayfasi({
      aynısını gösterir. `duzenle` varken açılmaz — o zaman düzenleme modalı
      önceliklidir ve alt köşesindeki "Geri" buraya döner. */
   const profil = p.profil && !modalAcik ? await binaDetayiGetir(p.profil) : null;
-  const [profilBelgeleri, profilMalikleri] = profil
+  const [profilBelgeleri, profilMalikleri, profilMuteahhitleri] = profil
     ? await Promise.all([
         belgeleriGetir({ binaId: profil.id }, oturum),
         binayaEklenebilirMalikler(profil.id),
+        portfoyMuteahhitleriGetir(),
       ])
-    : [[], []];
+    : [[], [], []];
 
   /** Aktif filtreleri koruyarak modal bağlantısı üretir */
   /** Ekrandaki filtreleri koruyarak CSV bağlantısı üretir */
@@ -172,6 +177,7 @@ export default async function BinalarSayfasi({
             bina={profil}
             belgeler={profilBelgeleri}
             kayitliMalikler={profilMalikleri}
+            portfoyMuteahhitleri={profilMuteahhitleri}
             duzenlenebilir={duzenlenebilir}
           />
         </ProfilModali>

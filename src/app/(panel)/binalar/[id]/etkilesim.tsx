@@ -1,6 +1,7 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
+import { useFormStatus } from "react-dom";
 import { IconCheck, IconPlus, IconTrash, IconX } from "@tabler/icons-react";
 import { SilOnayi } from "@/components/modal";
 import {
@@ -12,6 +13,7 @@ import {
 } from "@/lib/sabitler";
 import {
   aktiviteEkle,
+  binaMuteahhitAta,
   hisseOnayGuncelle,
   hisseSil,
   malikEkle,
@@ -348,5 +350,76 @@ export function MalikEkleFormu({
         </div>
       </form>
     </div>
+  );
+}
+
+/* ------------------------------------------------------- Müteahhit atama seçici
+
+   Bina profilindeki Müteahhit kartından atamayı doğrudan değiştirmek için.
+   Önceden bunun için dosyanın tamamını düzenleme formundan geçirmek
+   gerekiyordu; en sık yapılan değişiklik olduğu için yerinde bırakıldı.
+
+   Seçim değişince form kendini gönderir (OnayDegistirici ile aynı desen).
+   Kara listedeki firmalar listede kalır ama işaretlenir — atama engellenmiyor,
+   uyarı kartta ayrıca gösteriliyor. */
+
+
+function AtamaSecici({
+  seciliId,
+  muteahhitler,
+}: {
+  seciliId: string | null;
+  muteahhitler: { id: string; firmaAdi: string; durum: string }[];
+}) {
+  /* useFormStatus, çevreleyen formun durumunu izler ve işlem bitince kendisi
+     sıfırlanır. Daha önce burada useState vardı ve hiç sıfırlanmıyordu: server
+     action'dan sonra sunucu ağacı yeniden render ediliyor ama istemci
+     bileşeninin state'i hayatta kaldığı için "Kaydediliyor…" ekranda kalıyor,
+     seçici de kilitli duruyordu — kayıt aslında olmuş olmasına rağmen. */
+  const { pending } = useFormStatus();
+
+  return (
+    <>
+      <select
+        /* key: sunucudaki değer değişince seçici yeniden kurulur. Kontrolsüz
+           bir <select>'in DOM değeri, defaultValue güncellense de kendiliğinden
+           değişmez; kaydetme başarısız olursa ekranda kaydedilmemiş bir değer
+           kalmasın diye sunucu doğrusuna dönülüyor. */
+        key={seciliId ?? "yok"}
+        name="muteahhitId"
+        className="form-select form-select-sm"
+        defaultValue={seciliId ?? ""}
+        onChange={(e) => e.currentTarget.form?.requestSubmit()}
+        disabled={pending}
+        aria-label="Atanan müteahhit"
+      >
+        <option value="">— Müteahhit atanmadı —</option>
+        {muteahhitler.map((m) => (
+          <option key={m.id} value={m.id}>
+            {m.firmaAdi}
+            {m.durum === "KARA_LISTE" ? " (kara liste)" : ""}
+          </option>
+        ))}
+      </select>
+      {pending && <span className="text-secondary small flex-shrink-0">Kaydediliyor…</span>}
+    </>
+  );
+}
+
+export function MuteahhitAtayici({
+  binaId,
+  seciliId,
+  muteahhitler,
+}: {
+  binaId: string;
+  seciliId: string | null;
+  muteahhitler: { id: string; firmaAdi: string; durum: string }[];
+}) {
+  return (
+    <form action={binaMuteahhitAta} className="d-flex align-items-center gap-2">
+      <input type="hidden" name="binaId" value={binaId} />
+      {/* useFormStatus yalnızca formun İÇİNDEKİ bir bileşenden okunabilir */}
+      <AtamaSecici seciliId={seciliId} muteahhitler={muteahhitler} />
+    </form>
   );
 }

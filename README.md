@@ -89,6 +89,20 @@ katmanı var; karttaki Ara / E-posta / Site düğmeleri `.krp-kart-eylem` ile bu
 öğelerine yapılan tıklamalar hariç tutulur. Klavye erişimi satırdan değil, ad hücresindeki
 gerçek bağlantıdan sağlanır.
 
+**Yerinde düzenleme.** Bina profilinde iki kısayol var, dosyanın tamamını düzenleme
+formundan geçirmeye gerek kalmasın diye:
+
+- **Bina bilgileri** kartının sağ üstündeki `Düzenle` düğmesi. `components/duzenle-dugmesi.tsx`
+  hedef adresi mevcut adresten türetir: `duzenle` ekler, varsa `profil`'e dokunmaz. Böylece
+  aynı düğme hem detay sayfasında (yalnızca düzenleme modalı) hem profil modalında
+  ("Geri" ile dönebilen düzenleme modalı) doğru çalışır.
+- **Müteahhit** kartındaki `Atanan müteahhit` seçicisi. Seçim değişince kendiliğinden
+  kaydeder (`binaMuteahhitAta`); boş seçenek atamayı kaldırır. En sık yapılan değişiklik
+  olduğu için yerinde bırakıldı. Kara listedeki firmalar listede kalır ama `(kara liste)`
+  diye işaretlenir — atama engellenmez, kartta ayrıca uyarı çıkar. Her değişiklik SISTEM
+  aktivitesi olarak iz bırakır (kim, ne zaman, hangi firmadan hangisine); değer aynıysa
+  gereksiz iz oluşmaz.
+
 **Düzenle → Geri akışı.** Profildeki "Düzenle" adrese `duzenle` parametresini ekler ama
 `profil` yerinde kalır. `duzenle` varken düzenleme modalı önceliklidir; `profil` de
 adreste olduğu için formun alt köşesindeki düğme "Vazgeç" yerine **"Geri"** olur ve

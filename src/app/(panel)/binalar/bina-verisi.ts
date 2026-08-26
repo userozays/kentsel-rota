@@ -41,3 +41,11 @@ export function binayaEklenebilirMalikler(binaId: string) {
     take: 500,
   });
 }
+
+/** Müteahhit atama seçicisi için portföydeki firmalar. */
+export function portfoyMuteahhitleriGetir() {
+  return db.muteahhit.findMany({
+    select: { id: true, firmaAdi: true, durum: true },
+    orderBy: [{ durum: "asc" }, { firmaAdi: "asc" }],
+  });
+}
