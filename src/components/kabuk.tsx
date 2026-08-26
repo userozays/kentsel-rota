@@ -14,7 +14,6 @@ import {
   IconMoon,
   IconShieldLock,
   IconSun,
-  IconUserCircle,
   IconUsers,
 } from "@tabler/icons-react";
 import { basHarfler, avatarRengi } from "@/lib/yardimcilar";
@@ -23,15 +22,42 @@ import { GlobalArama } from "./global-arama";
 
 type Oturum = { id: string; ad: string; email: string; rol: string };
 
-const MENU = [
-  { yol: "/", etiket: "Panel", ikon: IconLayoutDashboard, tam: true },
-  { yol: "/binalar", etiket: "Binalar", ikon: IconBuildingCommunity },
-  { yol: "/malikler", etiket: "Malikler", ikon: IconUsers },
-  { yol: "/muteahhitler", etiket: "Müteahhitler", ikon: IconBriefcase },
-  { yol: "/takvim", etiket: "Canlı İş Takvimi", ikon: IconCalendarEvent },
-  { yol: "/aktiviteler", etiket: "Aktiviteler", ikon: IconHistory },
-  { yol: "/kullanicilar", etiket: "Kullanıcılar", ikon: IconShieldLock, sadeceAdmin: true },
+/* Menü, bölüm başlıklarıyla gruplanıyor: yedi düz madde yerine
+   "takip ettiğim kayıtlar" / "günlük iş" / "yönetim" ayrımı. */
+const MENU: { bolum?: string; ogeler: MenuOgesi[] }[] = [
+  {
+    ogeler: [{ yol: "/", etiket: "Panel", ikon: IconLayoutDashboard, tam: true }],
+  },
+  {
+    bolum: "Kayıtlar",
+    ogeler: [
+      { yol: "/binalar", etiket: "Binalar", ikon: IconBuildingCommunity },
+      { yol: "/malikler", etiket: "Malikler", ikon: IconUsers },
+      { yol: "/muteahhitler", etiket: "Müteahhitler", ikon: IconBriefcase },
+    ],
+  },
+  {
+    bolum: "İş akışı",
+    ogeler: [
+      { yol: "/takvim", etiket: "Canlı İş Takvimi", ikon: IconCalendarEvent },
+      { yol: "/aktiviteler", etiket: "Aktiviteler", ikon: IconHistory },
+    ],
+  },
+  {
+    bolum: "Yönetim",
+    ogeler: [
+      { yol: "/kullanicilar", etiket: "Kullanıcılar", ikon: IconShieldLock, sadeceAdmin: true },
+    ],
+  },
 ];
+
+type MenuOgesi = {
+  yol: string;
+  etiket: string;
+  ikon: typeof IconLayoutDashboard;
+  tam?: boolean;
+  sadeceAdmin?: boolean;
+};
 
 function aktifMi(yol: string, mevcut: string, tam?: boolean) {
   if (tam) return mevcut === yol;
@@ -61,7 +87,7 @@ function TemaSatiri() {
   return (
     <button type="button" className="krp-kenar-dugme" onClick={degistir} aria-label="Tema değiştir">
       <span className="nav-link-icon">
-        {tema === "dark" ? <IconSun size={20} stroke={1.5} /> : <IconMoon size={20} stroke={1.5} />}
+        {tema === "dark" ? <IconSun size={18} stroke={1.6} /> : <IconMoon size={18} stroke={1.6} />}
       </span>
       <span>{tema === "dark" ? "Aydınlık tema" : "Karanlık tema"}</span>
     </button>
@@ -73,15 +99,17 @@ function TemaSatiri() {
 function KullaniciBloku({ oturum, kompakt = false }: { oturum: Oturum; kompakt?: boolean }) {
   const rol = ROL[oturum.rol];
   return (
-    <div className="d-flex align-items-center lh-1">
-      <span className={`avatar avatar-sm bg-${avatarRengi(oturum.email)}-lt`}>{basHarfler(oturum.ad)}</span>
+    <>
+      <span className={`avatar avatar-sm bg-${avatarRengi(oturum.email)}-lt`}>
+        {basHarfler(oturum.ad)}
+      </span>
       {!kompakt && (
-        <div className="d-none d-xl-block ps-2">
-          <div>{oturum.ad}</div>
-          <div className="mt-1 small text-secondary">{rol?.etiket ?? oturum.rol}</div>
-        </div>
+        <span className="d-none d-xl-block">
+          <span className="krp-kisi-ad d-block">{oturum.ad}</span>
+          <span className="krp-kisi-rol d-block">{rol?.etiket ?? oturum.rol}</span>
+        </span>
       )}
-    </div>
+    </>
   );
 }
 
@@ -95,7 +123,10 @@ export function Kabuk({ oturum, children }: { oturum: Oturum; children: React.Re
     setMenuAcik(false);
   }, [yol]);
 
-  const gorunurMenu = MENU.filter((m) => !m.sadeceAdmin || oturum.rol === "ADMIN");
+  const gorunurBolumler = MENU.map((b) => ({
+    ...b,
+    ogeler: b.ogeler.filter((o) => !o.sadeceAdmin || oturum.rol === "ADMIN"),
+  })).filter((b) => b.ogeler.length > 0);
 
   return (
     <div className="page">
@@ -112,35 +143,51 @@ export function Kabuk({ oturum, children }: { oturum: Oturum; children: React.Re
           </button>
 
           <div className="navbar-brand navbar-brand-autodark">
-            <Link href="/" className="text-decoration-none d-flex align-items-center gap-2">
-              <span className="avatar avatar-sm bg-primary text-white">KR</span>
-              <span className="d-none d-lg-inline fw-bold">Kentsel Rota</span>
+            <Link href="/" className="krp-marka">
+              <span className="krp-marka-isaret" aria-hidden="true">
+                KR
+              </span>
+              <span className="d-none d-lg-block">
+                <span className="krp-marka-ad">Kentsel Rota</span>
+                <span className="krp-marka-alt">Süreç Paneli</span>
+              </span>
             </Link>
           </div>
 
           {/* Mobilde üst çubuk gizli olduğu için giriş yapan kişi burada görünür */}
-          <div className="d-lg-none">
-            <Link href="/profil" className="text-reset" title="Profilim">
+          <div className="d-lg-none pe-3">
+            <Link href="/profil" className="krp-kisi-cip" title="Profilim">
               <KullaniciBloku oturum={oturum} kompakt />
             </Link>
           </div>
 
           <div className={`collapse navbar-collapse${menuAcik ? " show" : ""}`}>
-            <ul className="navbar-nav pt-lg-3">
-              {gorunurMenu.map((m) => {
-                const Ikon = m.ikon;
-                const aktif = aktifMi(m.yol, yol, m.tam);
-                return (
-                  <li key={m.yol} className={`nav-item${aktif ? " active" : ""}`}>
-                    <Link className="nav-link" href={m.yol}>
-                      <span className="nav-link-icon d-md-none d-lg-inline-block">
-                        <Ikon size={20} stroke={1.5} />
-                      </span>
-                      <span className="nav-link-title">{m.etiket}</span>
-                    </Link>
-                  </li>
-                );
-              })}
+            <ul className="navbar-nav">
+              {gorunurBolumler.map((bolum, i) => (
+                <li key={bolum.bolum ?? `bolum-${i}`} className="nav-item krp-menu-bolum">
+                  {bolum.bolum && <span className="krp-menu-bolum-baslik">{bolum.bolum}</span>}
+                  <ul className="krp-menu-liste">
+                    {bolum.ogeler.map((m) => {
+                      const Ikon = m.ikon;
+                      const aktif = aktifMi(m.yol, yol, m.tam);
+                      return (
+                        <li key={m.yol} className={`nav-item${aktif ? " active" : ""}`}>
+                          <Link
+                            className="nav-link"
+                            href={m.yol}
+                            aria-current={aktif ? "page" : undefined}
+                          >
+                            <span className="nav-link-icon">
+                              <Ikon size={18} stroke={1.6} />
+                            </span>
+                            <span className="nav-link-title">{m.etiket}</span>
+                          </Link>
+                        </li>
+                      );
+                    })}
+                  </ul>
+                </li>
+              ))}
             </ul>
 
             {/* Kenar çubuğunun altı: tema ve çıkış.
@@ -150,7 +197,7 @@ export function Kabuk({ oturum, children }: { oturum: Oturum; children: React.Re
               <form action="/api/cikis" method="post">
                 <button type="submit" className="krp-kenar-dugme krp-kenar-cikis">
                   <span className="nav-link-icon">
-                    <IconLogout size={20} stroke={1.5} />
+                    <IconLogout size={18} stroke={1.6} />
                   </span>
                   <span>Çıkış Yap</span>
                 </button>
@@ -162,20 +209,22 @@ export function Kabuk({ oturum, children }: { oturum: Oturum; children: React.Re
 
       <header className="navbar navbar-expand-md d-none d-lg-flex d-print-none">
         <div className="container-fluid">
-          <div className="navbar-nav flex-row order-md-last align-items-center gap-2">
-            <Link
-              href="/profil"
-              className={`btn btn-sm${yol === "/profil" ? " active" : ""}`}
-              title="Profil bilgilerim ve şifre değiştirme"
-            >
-              <IconUserCircle size={18} stroke={1.5} className="me-1" />
-              Profilim
-            </Link>
-            <KullaniciBloku oturum={oturum} />
+          <div className="flex-fill" style={{ maxWidth: "26rem" }}>
+            <GlobalArama />
           </div>
 
-          <div className="me-3 flex-fill" style={{ maxWidth: "26rem" }}>
-            <GlobalArama />
+          {/* Profile tek giriş noktası: kişi çipinin kendisi.
+              Yanında ayrı bir "Profilim" düğmesi vardı, aynı yere gidiyordu —
+              kaldırıldı. */}
+          <div className="ms-auto">
+            <Link
+              href="/profil"
+              className="krp-kisi-cip"
+              title="Profil bilgilerim ve şifre değiştirme"
+              aria-current={yol === "/profil" ? "page" : undefined}
+            >
+              <KullaniciBloku oturum={oturum} />
+            </Link>
           </div>
         </div>
       </header>
@@ -184,15 +233,12 @@ export function Kabuk({ oturum, children }: { oturum: Oturum; children: React.Re
         {children}
         <footer className="footer footer-transparent d-print-none">
           <div className="container-fluid">
-            <div className="row text-center align-items-center flex-row-reverse">
-              <div className="col-12 col-lg-auto mt-3 mt-lg-0">
-                <span className="text-secondary small">Kentsel Rota Panel</span>
-              </div>
-              <div className="col-12 col-lg-auto mt-3 mt-lg-0">
-                <span className="text-secondary small">
-                  6306 sayılı Kanun kapsamında süreç takibi. Resmî işlemler için ilgili idare kayıtları esastır.
-                </span>
-              </div>
+            <div className="d-flex flex-column flex-lg-row align-items-center justify-content-between gap-2 text-center text-lg-start">
+              <span className="text-secondary">
+                6306 sayılı Kanun kapsamında süreç takibi. Resmî işlemler için ilgili idare kayıtları
+                esastır.
+              </span>
+              <span className="text-secondary">Kentsel Rota Panel</span>
             </div>
           </div>
         </footer>

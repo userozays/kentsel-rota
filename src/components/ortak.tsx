@@ -63,11 +63,11 @@ export function SayfaBasligi({
   return (
     <div className="page-header d-print-none">
       <div className="container-fluid">
-        <div className="row g-2 align-items-center">
+        <div className="row g-3 align-items-center">
           <div className="col">
             {ustBaslik && <div className="page-pretitle">{ustBaslik}</div>}
             <h2 className="page-title">{baslik}</h2>
-            {aciklama && <div className="text-secondary mt-1">{aciklama}</div>}
+            {aciklama && <div className="text-secondary mt-2">{aciklama}</div>}
           </div>
           {aksiyonlar && (
             <div className="col-auto ms-auto d-print-none">
@@ -100,7 +100,11 @@ export function BosDurum({
   );
 }
 
-/* ------------------------------------------------------------ İstatistik kartı */
+/* ------------------------------------------------------------ İstatistik kartı
+
+   Yerleşim: üstte etiket + tonlu ikon, ortada büyük sayı, altta alt bilgi.
+   Renk yalnızca ikonda ve bir tonda görünür; büyük sayı her zaman mürekkep
+   renginde kalır ki dört kart yan yana dizildiğinde biri diğerini bastırmasın. */
 
 export function IstatistikKart({
   baslik,
@@ -118,27 +122,24 @@ export function IstatistikKart({
   href?: string;
 }) {
   const govde = (
-    <div className="card card-sm h-100">
-      <div className="card-body">
-        <div className="row align-items-center">
-          {ikon && (
-            <div className="col-auto">
-              <span className={`bg-${renk} text-white avatar`}>{ikon}</span>
-            </div>
-          )}
-          <div className="col">
-            <div className="font-weight-medium">
-              <span className="h1 mb-0">{deger}</span>
-            </div>
-            <div className="text-secondary">{baslik}</div>
-            {altBilgi && <div className="text-secondary small mt-1">{altBilgi}</div>}
-          </div>
-        </div>
+    <div className="krp-istatistik">
+      <div className="krp-istatistik-ust">
+        <span className="krp-istatistik-etiket">{baslik}</span>
+        {ikon && (
+          <span className="krp-istatistik-ikon" data-renk={renk} aria-hidden="true">
+            {ikon}
+          </span>
+        )}
       </div>
+      <div className="krp-istatistik-deger">{deger}</div>
+      {/* Alt bilgi boş da olsa satır çizilir; aynı sıradaki kartların
+          büyük sayıları hizada kalsın. */}
+      <div className="krp-istatistik-alt">{altBilgi}</div>
     </div>
   );
+
   return href ? (
-    <Link href={href} className="text-decoration-none text-reset d-block h-100">
+    <Link href={href} className="krp-istatistik-baglanti">
       {govde}
     </Link>
   ) : (
@@ -146,7 +147,10 @@ export function IstatistikKart({
   );
 }
 
-/* ------------------------------------------------------------- Onay çubuğu */
+/* ------------------------------------------------------------- Onay çubuğu
+
+   Arsa payı bazlı onay dağılımı. Kehribar kesikli çizgi çoğunluk eşiğini
+   gösterir — panelin tek "sıcak" renkli işareti bilinçli olarak burada. */
 
 export function OnayCubugu({ ozet, etiketGoster = true }: { ozet: OnayOzeti; etiketGoster?: boolean }) {
   const g = (n: number) => `${Math.max(0, Math.min(100, n))}%`;
@@ -162,12 +166,12 @@ export function OnayCubugu({ ozet, etiketGoster = true }: { ozet: OnayOzeti; eti
         <div className="esik-isareti" style={{ left: g(ozet.esik) }} title={`Çoğunluk eşiği %${ozet.esik}`} />
       </div>
       {etiketGoster && (
-        <div className="d-flex justify-content-between mt-2 small">
+        <div className="d-flex justify-content-between align-items-baseline mt-2" style={{ fontSize: "0.75rem" }}>
           <span className={ozet.cogunlukSaglandi ? "text-green fw-bold" : "text-secondary"}>
             Olumlu {yuzde(ozet.olumluOran)}
             {ozet.cogunlukSaglandi ? " · çoğunluk sağlandı" : ` · eşik %${ozet.esik}`}
           </span>
-          <span className="text-secondary">
+          <span className="text-secondary krp-sayi">
             {sayi(ozet.olumluAdet)}/{sayi(ozet.bolumSayisi)} bağımsız bölüm
           </span>
         </div>
@@ -180,9 +184,9 @@ export function OnayCubugu({ ozet, etiketGoster = true }: { ozet: OnayOzeti; eti
 
 export function YildizPuan({ puan }: { puan: number }) {
   return (
-    <span className="text-yellow" title={`${puan}/5`}>
+    <span className="krp-yildiz text-yellow" title={`${puan}/5`}>
       {"★".repeat(Math.max(0, Math.min(5, puan)))}
-      <span className="text-secondary">{"★".repeat(Math.max(0, 5 - puan))}</span>
+      <span className="text-secondary opacity-50">{"★".repeat(Math.max(0, 5 - puan))}</span>
     </span>
   );
 }

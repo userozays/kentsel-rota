@@ -1,7 +1,8 @@
 # Kentsel Rota Panel
 
 Kentsel dönüşüm danışmanlığı için bina dosyası, malik onay, müteahhit portföyü ve iş takvimi paneli.
-Tasarım [Tabler](https://tabler.io) (MIT) üzerine kurulu.
+Tasarım [Tabler](https://tabler.io) (MIT) üzerine kurulu, üstüne projeye özel bir tema
+katmanı biniyor — bkz. [Tasarım](#tasarım).
 
 ---
 
@@ -135,6 +136,8 @@ prisma/
   arama-doldur.ts    Arama sütunlarını yeniden hesaplar
 src/
   app/
+    globals.css      Tasarım katmanı: tokenlar, tipografi, bileşen düzeltmeleri
+    layout.tsx       Fontlar ve tema betiği
     giris/           Giriş ekranı
     (panel)/         Oturum gerektiren tüm sayfalar
       binalar/  malikler/  muteahhitler/  takvim/  aktiviteler/  kullanicilar/  profil/
@@ -295,6 +298,52 @@ tar czf /yedek/belgeler-$(date +%F).tar.gz veri/belgeler
 Şema PostgreSQL uyumlu yazıldı; enum yerine `String` alanlar kullanıldığı için ek değişiklik
 gerekmez. PostgreSQL'de Prisma'nın `mode: "insensitive"` seçeneği de çalışır, ama normalize
 sütun aksan sadeleştirmesi sağladığı için yerinde bırakılması önerilir.
+
+---
+
+## Tasarım
+
+Tabler'ın üstüne tek bir tasarım katmanı biniyor: `src/app/globals.css`. Sayfa kodlarına
+dokunmadan tüm paneli yeniden giydirebilmek için Tabler'ın kendi CSS değişkenleri eziliyor.
+Tabler 1.4 tonlu varyantları (`bg-green-lt` gibi) `color-mix` ile temel renkten türettiği için
+tek bir `--tblr-green` tanımı yeterli oluyor.
+
+Dosyanın başındaki `--krp-*` blokları tek doğruluk kaynağı: zeminler, çizgiler, metin
+tonları, vurgu ve anlam renkleri. Aydınlık/karanlık iki blok var, aralarında yalnızca bu
+değişkenler farklı.
+
+**Renk bilgidir, süs değildir.** Arayüz mürekkep ve gri tonlarında yürür; renk yalnızca
+anlam taşıdığı yerde çıkar:
+
+| Renk | Anlamı |
+|---|---|
+| Yeşil | Olumlu onay |
+| Kırmızı | Olumsuz onay |
+| Kehribar | Bekleyen / çoğunluk eşiği |
+| Mavi | Bağlantı, odak halkası, aktif menü — "tesisat rengi" |
+| Mürekkep | Birincil eylem düğmeleri |
+
+Birincil düğmeler bilinçli olarak mavi değil mürekkep siyahı; böylece malik onay çubuğu
+ekranın en renkli, dolayısıyla en dikkat çeken öğesi kalıyor. Çoğunluk eşiği onay çubuğu
+üzerinde kehribar kesikli çizgiyle işaretlenir — panelin tek "sıcak" renkli işareti.
+
+Süreç paletindeki yedi ek ton (`--krp-h-*`) 16 adımlık akışın rozetleri için: benzer
+parlaklık ve doygunlukta seçildiler, yan yana dizildiklerinde biri diğerini bastırmıyor.
+
+Derinlik gölge yerine 1 px çizgiyle veriliyor; gölge yalnızca üste binen katmanlarda
+(modal, arama paneli, açılır menü) kullanılıyor.
+
+**Tipografi** `next/font` ile self-host edilir, üçünde de `latin-ext` var (ş/ğ/ı/İ/ç/ö/ü
+eksiksiz):
+
+| Font | Nerede |
+|---|---|
+| Bricolage Grotesque | Sayfa başlıkları, marka, büyük sayılar |
+| Instrument Sans | Gövde ve arayüz metni |
+| IBM Plex Mono | Ada/parsel kodları, sabit genişlik gereken sayılar |
+
+Başlık fontu gövde metninde kullanılmaz; yoğun tablolarda yorucu olur. Sayısal veri her
+yerde `tabular-nums` ile hizalanır, yoksa oranlar alt alta kayıyor.
 
 ---
 

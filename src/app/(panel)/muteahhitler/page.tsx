@@ -75,14 +75,14 @@ export default async function MuteahhitlerSayfasi({
         aksiyonlar={
           duzenlenebilir ? (
             <>
-            <a href={disaAktarYolu()} className="btn">
-              <IconDownload size={18} stroke={1.5} className="me-1" />
-              Dışa Aktar
-            </a>
-            <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
-              <IconPlus size={18} stroke={1.5} className="me-1" />
-              Yeni Müteahhit
-            </Link>
+              <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
+                <IconPlus size={18} stroke={1.5} className="me-1" />
+                Yeni Müteahhit
+              </Link>
+              <a href={disaAktarYolu()} className="btn">
+                <IconDownload size={18} stroke={1.5} className="me-1" />
+                Dışa Aktar
+              </a>
             </>
           ) : null
         }
@@ -220,19 +220,8 @@ export default async function MuteahhitlerSayfasi({
                             {m.yetkiliKisi ? ` · ${m.yetkiliKisi}` : ""}
                           </div>
                         </div>
-                        <div className="d-flex flex-column align-items-end gap-1 flex-shrink-0">
+                        <div className="flex-shrink-0">
                           <Rozet harita={MUTEAHHIT_DURUMU} deger={m.durum} />
-                          {duzenlenebilir && (
-                            <Link
-                              href={modalYolu({ duzenle: m.id })}
-                              scroll={false}
-                              className="btn btn-sm btn-icon"
-                              title="Düzenle"
-                              aria-label={`${m.firmaAdi} kaydını düzenle`}
-                            >
-                              <IconEdit size={16} stroke={1.5} />
-                            </Link>
-                          )}
                         </div>
                       </div>
 
@@ -282,6 +271,20 @@ export default async function MuteahhitlerSayfasi({
                             <IconExternalLink size={15} stroke={1.5} className="me-1" />
                             Site
                           </a>
+                        )}
+                        {/* Düzenle, kartın üst köşesinden buraya taşındı: diğer
+                            eylemlerle aynı sırada duruyor. Yanındakiler etiketli
+                            olduğu için bu da etiketli. */}
+                        {duzenlenebilir && (
+                          <Link
+                            href={modalYolu({ duzenle: m.id })}
+                            scroll={false}
+                            className="btn btn-sm"
+                            aria-label={`${m.firmaAdi} kaydını düzenle`}
+                          >
+                            <IconEdit size={15} stroke={1.5} className="me-1" />
+                            Düzenle
+                          </Link>
                         )}
                       </div>
                     </div>

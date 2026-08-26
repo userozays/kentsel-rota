@@ -115,14 +115,14 @@ export default async function BinalarSayfasi({
         aksiyonlar={
           duzenlenebilir ? (
             <>
-            <a href={disaAktarYolu()} className="btn">
-              <IconDownload size={18} stroke={1.5} className="me-1" />
-              Dışa Aktar
-            </a>
-            <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
-              <IconPlus size={18} stroke={1.5} className="me-1" />
-              Yeni Bina Dosyası
-            </Link>
+              <Link href={modalYolu({ yeni: "1" })} scroll={false} className="btn btn-primary">
+                <IconPlus size={18} stroke={1.5} className="me-1" />
+                Yeni Bina Dosyası
+              </Link>
+              <a href={disaAktarYolu()} className="btn">
+                <IconDownload size={18} stroke={1.5} className="me-1" />
+                Dışa Aktar
+              </a>
             </>
           ) : null
         }
@@ -356,7 +356,7 @@ export default async function BinalarSayfasi({
                                   title="Düzenle"
                                   aria-label={`${b.baslik} dosyasını düzenle`}
                                 >
-                                  <IconEdit size={16} stroke={1.5} />
+                                  <IconEdit size={18} stroke={1.6} />
                                 </Link>
                               </td>
                             )}

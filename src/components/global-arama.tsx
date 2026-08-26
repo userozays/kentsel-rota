@@ -156,7 +156,7 @@ export function GlobalArama() {
   let sirano = -1;
 
   return (
-    <div className="position-relative w-100" ref={kutu} style={{ maxWidth: "26rem" }}>
+    <div className="position-relative w-100 krp-arama" ref={kutu} style={{ maxWidth: "26rem" }}>
       <div className="input-icon">
         <span className="input-icon-addon">
           {durum === "yukleniyor" || durum === "yaziliyor" ? (
@@ -183,7 +183,7 @@ export function GlobalArama() {
           role="combobox"
           aria-controls="krp-arama-sonuclari"
         />
-        {terim && (
+        {terim ? (
           <span className="input-icon-addon" style={{ left: "auto", right: 0, pointerEvents: "all" }}>
             <button
               type="button"
@@ -194,6 +194,13 @@ export function GlobalArama() {
             >
               <IconX size={16} stroke={1.5} />
             </button>
+          </span>
+        ) : (
+          /* Girdi boşken kısayol ipucu; yazmaya başlayınca yerini temizle
+             düğmesine bırakır. aria-hidden — ekran okuyucuya gürültü olmasın. */
+          <span className="krp-arama-kisayol" aria-hidden="true">
+            <kbd>Ctrl</kbd>
+            <kbd>K</kbd>
           </span>
         )}
       </div>

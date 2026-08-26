@@ -107,7 +107,7 @@ export default async function KullanicilarSayfasi() {
                         <div className="btn-list flex-nowrap align-items-center">
                           <DurumDugmesi id={k.id} aktif={k.aktif} kendisi={k.id === oturum.id} />
                           <Link href={`/kullanicilar/${k.id}`} className="btn btn-sm btn-icon" title="Düzenle">
-                            <IconEdit size={16} stroke={1.5} />
+                            <IconEdit size={18} stroke={1.6} />
                           </Link>
                         </div>
                       </td>
